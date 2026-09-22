@@ -4,6 +4,15 @@ export function formatDate(date?: string | Date | null): string {
   if (!date) return "N/A";
   try {
     const d = typeof date === "string" ? parseISO(date) : date;
+    if (typeof window !== "undefined") {
+      return new Intl.DateTimeFormat(navigator.language, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric"
+      }).format(d);
+    }
     return format(d, "MMM d, yyyy");
   } catch (e) {
     return "Invalid Date";
