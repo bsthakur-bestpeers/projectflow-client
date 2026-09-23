@@ -147,7 +147,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps>(
           document.body
         )}
 
-        {hint && !error && <p className="mt-1 text-[11px] text-slate-400">{hint}</p>}
+        {hint && !error && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
         {error && <p className="mt-1.5 text-xs text-rose-600 font-medium">{error}</p>}
       </div>
     );

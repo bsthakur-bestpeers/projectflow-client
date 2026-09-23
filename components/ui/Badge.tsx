@@ -30,7 +30,7 @@ export function Badge({ children, color = "slate", withDot = true, pulseDot = fa
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border tracking-tight shadow-2xs",
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border tracking-tight shadow-2xs",
         theme.bg,
         className
       )}
@@ -106,7 +106,7 @@ export function AssignmentFlowBadge({
   if (size === "sm") {
     return (
       <div
-        className="flex items-center gap-1 bg-slate-50 border border-slate-200/90 px-2 py-0.5 rounded-lg text-[11px] shadow-2xs"
+        className="flex items-center gap-1 bg-slate-50 border border-slate-200/90 px-2 py-0.5 rounded-lg text-xs shadow-2xs"
         title={`Assigned by ${author?.full_name ?? "Unknown"} → to ${assignee?.full_name ?? "Unassigned"}`}
       >
         {author && (
@@ -133,7 +133,7 @@ export function AssignmentFlowBadge({
             </span>
           </div>
         ) : (
-          <span className="text-[10px] text-slate-400 italic">Unassigned</span>
+          <span className="text-xs text-slate-400 italic">Unassigned</span>
         )}
       </div>
     );
@@ -146,7 +146,7 @@ export function AssignmentFlowBadge({
     >
       {author && (
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">By:</span>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">By:</span>
           <Avatar name={author.full_name} size="xs" />
           <span className="text-xs font-semibold text-slate-700 max-w-[95px] truncate">
             {author.full_name}
@@ -163,7 +163,7 @@ export function AssignmentFlowBadge({
       </svg>
       {assignee ? (
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight">To:</span>
+          <span className="text-xs font-bold text-indigo-600 uppercase tracking-tight">To:</span>
           <Avatar name={assignee.full_name} size="xs" />
           <span className="text-xs font-bold text-indigo-700 max-w-[95px] truncate">
             {assignee.full_name}

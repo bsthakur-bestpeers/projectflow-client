@@ -266,7 +266,7 @@ export default function CreateSprintModal({ isOpen, onClose, onCreated, projectI
           />
         </div>
         {duration && startDate && endDate && (
-          <p className="text-[11px] text-slate-500 -mt-2">
+          <p className="text-xs text-slate-500 -mt-2">
             End date auto-calculated: <span className="font-semibold text-slate-700">{endDate}</span>
           </p>
         )}

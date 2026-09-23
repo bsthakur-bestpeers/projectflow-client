@@ -9,6 +9,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
   rightElement?: React.ReactNode;
   showPasswordToggle?: boolean;
+  list?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(

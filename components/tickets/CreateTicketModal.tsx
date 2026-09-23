@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { ticketsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
-import { ESTIMATION_OPTIONS } from "@/constants";
+
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
@@ -169,7 +169,7 @@ export default function CreateTicketModal({
             />
             <Input
               id="new-ticket-estimation"
-              label="Estimation (1h, 1d)"
+              label="Estimation (1h, 2h, 3h, 4h, 1d, 2d, 3d, 4d, 5d)"
               value={estimation}
               onChange={(e) => setEstimation(e.target.value)}
               placeholder="e.g. 1h, 2d"

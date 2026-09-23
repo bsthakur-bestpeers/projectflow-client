@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi, projectsApi, usersApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
-import { ESTIMATION_OPTIONS, TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
+import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
 import { PageSpinner, ErrorState, Avatar } from "@/components/ui/Misc";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -119,14 +119,14 @@ export default function TicketDetailPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
           <Select id="td-status" label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={TICKET_STATUS.map((s) => ({ value: s, label: TICKET_STATUS_LABELS[s] }))} />
-          <Select id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="No estimate" options={ESTIMATION_OPTIONS.map((e) => ({ value: e, label: e }))} />
+          <Input id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="e.g. 1h, 2d" />
           <Select id="td-assignee" label="Assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} placeholder="Unassigned" options={userList.map((m) => ({ value: m.id.toString(), label: m.full_name }))} />
           <Select id="td-sprint" label="Sprint" value={sprintId} onChange={(e) => setSprintId(e.target.value)} placeholder="Backlog" options={sprints.map((s) => ({ value: s.id.toString(), label: s.name ?? `Sprint #${s.id}` }))} />
         </div>
 
         <div className="mb-6">
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Description</label>
-          <TiptapEditor content={description} onChange={setDescription} />
+          <TiptapEditor key={`ticket-${ticket.id}`} content={description} onChange={setDescription} />
         </div>
 
         <div className="flex items-center gap-4 text-xs text-slate-400 mb-6 pb-6 border-b border-slate-100 flex-wrap">

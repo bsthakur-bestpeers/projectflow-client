@@ -83,7 +83,7 @@ export function Avatar({ name, size = "md" }: { name: string; size?: "xs" | "sm"
     .slice(0, 2);
   const sizes = {
     xs: "h-5 w-5 text-[9px]",
-    sm: "h-6 w-6 text-[10px]",
+    sm: "h-6 w-6 text-xs",
     md: "h-8 w-8 text-xs",
     lg: "h-10 w-10 text-sm",
   };

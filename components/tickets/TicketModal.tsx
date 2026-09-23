@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
-import { ESTIMATION_OPTIONS, TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
+import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
 import { TicketStatusBadge, AssignmentFlowBadge } from "@/components/ui/Badge";
 import { timeAgo, formatDate } from "@/lib/utils";
 import Modal from "@/components/ui/Modal";
@@ -46,9 +46,16 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
 
   useEffect(() => {
     if (!isOpen) return;
+    setTitle(ticket.title);
+    setDescription(ticket.description ?? "");
+    setStatus(ticket.status);
+    setEstimation(ticket.estimation ?? "");
+    setAssigneeId(ticket.assignee_id?.toString() ?? "");
+    setAuthorId(ticket.author_id?.toString() ?? "");
+    setSprintId(ticket.sprint_id?.toString() ?? "");
     membersApi.list(ticket.project_id).then(setMembers).catch(() => { });
     sprintsApi.listByProject(ticket.project_id).then(setSprints).catch(() => { });
-  }, [isOpen, ticket.project_id]);
+  }, [isOpen, ticket]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -133,7 +140,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
           {/* Description */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1.5 tracking-tight">Description</label>
-            <TiptapEditor content={description} onChange={setDescription} />
+            <TiptapEditor key={`ticket-${ticket.id}`} content={description} onChange={setDescription} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/70">
@@ -161,7 +168,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             />
             <Input
               id="ticket-estimation"
-              label="Estimation (1h, 1d)"
+              label="Estimation (1h, 2h, 3h, 4h, 1d, 2d, 3d, 4d, 5d)"
               value={estimation}
               onChange={(e) => setEstimation(e.target.value)}
               placeholder="e.g. 1h, 2d"

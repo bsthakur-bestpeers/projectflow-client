@@ -164,14 +164,31 @@ export const adminApi = {
     api.patch(`/admin/users/${userId}/role`, { role }).then((r) => r.data.data),
 };
 
+export interface UploadedFile {
+  url: string;
+  filename: string;
+  originalName: string;
+  mimetype: string;
+  size: number;
+}
+
 export const uploadApi = {
-  uploadFile: (file: File): Promise<{ url: string; filename: string; originalName: string; mimetype: string; size: number }> => {
+  uploadFile: (file: File): Promise<UploadedFile> => {
     const formData = new FormData();
     formData.append("file", file);
     return api.post("/uploads", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     }).then((r) => r.data.data);
   },
+
+  uploadMultiple: (files: File[]): Promise<UploadedFile[]> => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    return api.post("/uploads/multiple", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data.data);
+  },
+
+  deleteFile: (filename: string): Promise<void> =>
+    api.delete(`/uploads/${filename}`).then(() => undefined),
 };
