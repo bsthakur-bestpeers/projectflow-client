@@ -99,6 +99,7 @@ export const ticketsApi = {
     title: string;
     description?: string;
     status?: string;
+    priority?: string;
     estimation?: string;
     sprintId?: number | null;
     assigneeId?: number | null;
@@ -109,6 +110,7 @@ export const ticketsApi = {
     title?: string;
     description?: string;
     status?: string;
+    priority?: string;
     estimation?: string | null;
     assigneeId?: number | null;
     authorId?: number | null;

@@ -59,6 +59,7 @@ export interface Ticket {
   title: string;
   description: string | null;
   status: string;
+  priority: "HIGHEST" | "HIGH" | "MEDIUM" | "LOW" | "LOWEST" | string;
   estimation: string | null;
   author_id: number;
   assignee_id: number | null;

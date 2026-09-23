@@ -186,3 +186,118 @@ export function AssignmentFlowBadge({
   );
 }
 
+import { TICKET_PRIORITY_LABELS, TicketPriority } from "@/constants";
+
+export function PriorityIcon({
+  priority,
+  size = "md",
+  className,
+}: {
+  priority?: string | null;
+  size?: "xs" | "sm" | "md" | "lg";
+  className?: string;
+}) {
+  const p = (priority || "MEDIUM").toUpperCase();
+  const sizeMap = {
+    xs: "w-3 h-3",
+    sm: "w-3.5 h-3.5",
+    md: "w-4 h-4",
+    lg: "w-5 h-5",
+  };
+  const iconClass = cn(sizeMap[size] || sizeMap.md, "shrink-0", className);
+
+  switch (p) {
+    case "HIGHEST":
+      return (
+        <svg className={cn(iconClass, "text-[#E5493A]")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round">
+          <title>Highest Priority</title>
+          <polyline points="17 11 12 6 7 11" />
+          <polyline points="17 17 12 12 7 17" />
+        </svg>
+      );
+    case "HIGH":
+      return (
+        <svg className={cn(iconClass, "text-[#FF5630]")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round">
+          <title>High Priority</title>
+          <polyline points="18 15 12 9 6 15" />
+        </svg>
+      );
+    case "MEDIUM":
+      return (
+        <svg className={cn(iconClass, "text-[#FFAB00]")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+          <title>Medium Priority</title>
+          <line x1="6" y1="9.5" x2="18" y2="9.5" />
+          <line x1="6" y1="14.5" x2="18" y2="14.5" />
+        </svg>
+      );
+    case "LOW":
+      return (
+        <svg className={cn(iconClass, "text-[#0065FF]")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round">
+          <title>Low Priority</title>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      );
+    case "LOWEST":
+      return (
+        <svg className={cn(iconClass, "text-[#2684FF]")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round">
+          <title>Lowest Priority</title>
+          <polyline points="7 7 12 12 17 7" />
+          <polyline points="7 13 12 18 17 13" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={cn(iconClass, "text-slate-400")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <title>{priority ?? "Medium"}</title>
+          <line x1="6" y1="12" x2="18" y2="12" />
+        </svg>
+      );
+  }
+}
+
+export function PriorityBadge({
+  priority,
+  size = "md",
+  className,
+}: {
+  priority?: string | null;
+  size?: "sm" | "md";
+  className?: string;
+}) {
+  const p = (priority || "MEDIUM").toUpperCase();
+  const label = TICKET_PRIORITY_LABELS[p as TicketPriority] || p;
+
+  const bgStyles: Record<string, string> = {
+    HIGHEST: "bg-rose-50/80 border-rose-200/80 text-rose-700",
+    HIGH: "bg-orange-50/80 border-orange-200/80 text-orange-700",
+    MEDIUM: "bg-amber-50/80 border-amber-200/80 text-amber-700",
+    LOW: "bg-blue-50/80 border-blue-200/80 text-blue-700",
+    LOWEST: "bg-sky-50/80 border-sky-200/80 text-sky-700",
+  };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-lg font-semibold border shadow-2xs",
+        size === "sm" ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-0.5 text-xs",
+        bgStyles[p] || "bg-slate-50 border-slate-200 text-slate-700",
+        className
+      )}
+      title={`Priority: ${label}`}
+    >
+      <PriorityIcon priority={p} size={size === "sm" ? "xs" : "sm"} />
+      <span>{label}</span>
+    </span>
+  );
+}
+
+export const getPriorityOptions = () => [
+  { value: "HIGHEST", label: "Highest", icon: <PriorityIcon priority="HIGHEST" size="sm" /> },
+  { value: "HIGH", label: "High", icon: <PriorityIcon priority="HIGH" size="sm" /> },
+  { value: "MEDIUM", label: "Medium", icon: <PriorityIcon priority="MEDIUM" size="sm" /> },
+  { value: "LOW", label: "Low", icon: <PriorityIcon priority="LOW" size="sm" /> },
+  { value: "LOWEST", label: "Lowest", icon: <PriorityIcon priority="LOWEST" size="sm" /> },
+];
+
+
+

@@ -5,7 +5,8 @@ import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
 import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
-import { TicketStatusBadge, AssignmentFlowBadge } from "@/components/ui/Badge";
+import { TicketStatusBadge, AssignmentFlowBadge, PriorityBadge, getPriorityOptions } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Misc";
 import { timeAgo, formatDate } from "@/lib/utils";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -32,6 +33,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
   const [title, setTitle] = useState(ticket.title);
   const [description, setDescription] = useState(ticket.description ?? "");
   const [status, setStatus] = useState(ticket.status);
+  const [priority, setPriority] = useState(ticket.priority || "MEDIUM");
   const [estimation, setEstimation] = useState(ticket.estimation ?? "");
   const [assigneeId, setAssigneeId] = useState(ticket.assignee_id?.toString() ?? "");
   const [authorId, setAuthorId] = useState(ticket.author_id?.toString() ?? "");
@@ -49,6 +51,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
     setTitle(ticket.title);
     setDescription(ticket.description ?? "");
     setStatus(ticket.status);
+    setPriority(ticket.priority || "MEDIUM");
     setEstimation(ticket.estimation ?? "");
     setAssigneeId(ticket.assignee_id?.toString() ?? "");
     setAuthorId(ticket.author_id?.toString() ?? "");
@@ -64,6 +67,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
         title,
         description,
         status,
+        priority,
         estimation: estimation || null,
         assigneeId: assigneeId ? parseInt(assigneeId) : null,
         authorId: authorId ? parseInt(authorId) : undefined,
@@ -106,11 +110,16 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
         externalLink={`/tickets/${ticket.id}`}
       >
         <div className="space-y-4 sm:space-y-5">
-          {/* Status & Sprint Summary Badges */}
+          {/* Status, Priority & Sprint Summary Badges */}
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap bg-slate-50/90 p-2.5 sm:p-3 rounded-xl border border-slate-200/80 text-xs">
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Status:</span>
               <TicketStatusBadge status={status} />
+            </div>
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Priority:</span>
+              <PriorityBadge priority={priority} size="sm" />
             </div>
             <span className="text-slate-300 hidden sm:inline">|</span>
             <div className="flex items-center gap-1.5 shrink-0 min-w-0">
@@ -143,7 +152,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             <TiptapEditor key={`ticket-${ticket.id}`} content={description} onChange={setDescription} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3 sm:p-3.5 rounded-xl border border-slate-200/70">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-slate-50/80 p-3 sm:p-3.5 rounded-xl border border-slate-200/70">
             <Select
               id="ticket-status"
               label="Status *"
@@ -152,12 +161,34 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
               options={TICKET_STATUS.map((s) => ({ value: s, label: TICKET_STATUS_LABELS[s] }))}
             />
             <Select
+              id="ticket-priority"
+              label="Priority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              options={getPriorityOptions()}
+            />
+            <Select
               id="ticket-assignee"
               label="Assignee"
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               placeholder="Unassigned"
-              options={members.map((m) => ({ value: m.id.toString(), label: m.full_name }))}
+              options={members.map((m) => ({
+                value: m.id.toString(),
+                label: m.full_name,
+                icon: <Avatar name={m.full_name} size="xs" />,
+              }))}
+            />
+            <Select
+              id="ticket-sprint"
+              label="Sprint"
+              value={sprintId}
+              onChange={(e) => setSprintId(e.target.value)}
+              placeholder="Backlog"
+              options={sprints.map((s) => ({
+                value: s.id.toString(),
+                label: s.name ?? `Sprint #${s.id}`,
+              }))}
             />
             <Input
               id="ticket-author"

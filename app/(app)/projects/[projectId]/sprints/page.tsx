@@ -6,7 +6,7 @@ import { addToast } from "@/store/uiSlice";
 import { sprintsApi, projectsApi, membersApi, ticketsApi } from "@/services/api";
 import { Sprint, Member, Ticket } from "@/types";
 import { PageSpinner, EmptyState, Avatar } from "@/components/ui/Misc";
-import { TicketStatusBadge, AssignmentFlowBadge } from "@/components/ui/Badge";
+import { TicketStatusBadge, AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
@@ -311,9 +311,12 @@ export default function SprintsPage() {
                             className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 rounded-xl bg-slate-50/70 hover:bg-indigo-50/40 border border-slate-200/70 hover:border-indigo-200/80 cursor-pointer transition-all group gap-2 sm:gap-3"
                           >
                             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                              <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-md shrink-0">
-                                {projectPrefix}-{ticket.id}
-                              </span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <PriorityIcon priority={ticket.priority} size="sm" />
+                                <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-md">
+                                  {projectPrefix}-{ticket.id}
+                                </span>
+                              </div>
                               <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-indigo-600 truncate min-w-0">
                                 {ticket.title}
                               </span>
@@ -412,12 +415,12 @@ export default function SprintsPage() {
         return (
           <Modal isOpen={!!editSprint} onClose={() => setEditSprint(null)} title="Edit Sprint" subtitle="Update sprint details or cycle dates.">
         <form onSubmit={handleUpdate} className="space-y-4">
-          <Input id="edit-sprint-name" label="Sprint Name (optional)" value={formData.name} onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))} />
+          <Input id="edit-sprint-name" label="Sprint Name" value={formData.name} onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))} />
 
           {/* Duration Selector */}
           <Select
             id="edit-sprint-duration"
-            label="Sprint Duration (optional)"
+            label="Sprint Duration"
             value={(() => {
               if (!formData.start_date || !formData.end_date) return "";
               const start = new Date(formData.start_date);

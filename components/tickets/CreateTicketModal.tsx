@@ -10,6 +10,8 @@ import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import Input from "@/components/ui/Input";
+import { getPriorityOptions } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Misc";
 import TiptapEditor from "./TiptapEditor";
 
 interface Props {
@@ -39,16 +41,16 @@ export default function CreateTicketModal({
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("MEDIUM");
   const [estimation, setEstimation] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
   const [authorId, setAuthorId] = useState(currentUser?.id.toString() ?? "");
   const [titleError, setTitleError] = useState("");
 
-
-
   const reset = () => {
     setTitle("");
     setDescription("");
+    setPriority("MEDIUM");
     setEstimation("");
     setAssigneeId("");
     setAuthorId(currentUser?.id.toString() ?? "");
@@ -77,6 +79,7 @@ export default function CreateTicketModal({
       const ticket = await ticketsApi.create(projectId, {
         title: title.trim(),
         description: description || undefined,
+        priority,
         estimation: estimation || undefined,
         assigneeId: assigneeId ? parseInt(assigneeId) : null,
         authorId: authorId ? parseInt(authorId) : undefined,
@@ -151,14 +154,25 @@ export default function CreateTicketModal({
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/70">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/70">
+            <Select
+              id="new-ticket-priority"
+              label="Priority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              options={getPriorityOptions()}
+            />
             <Select
               id="new-ticket-assignee"
               label="Assignee"
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               placeholder="Unassigned"
-              options={members.map((m) => ({ value: m.id.toString(), label: m.full_name }))}
+              options={members.map((m) => ({
+                value: m.id.toString(),
+                label: m.full_name,
+                icon: <Avatar name={m.full_name} size="xs" />,
+              }))}
             />
             <Input
               id="new-ticket-author"
@@ -169,7 +183,8 @@ export default function CreateTicketModal({
             />
             <Input
               id="new-ticket-estimation"
-              label="Estimation (1h, 2h, 3h, 4h, 1d, 2d, 3d, 4d, 5d)"
+              label="Estimation"
+              hint="e.g. 1h, 2d, 3d"
               value={estimation}
               onChange={(e) => setEstimation(e.target.value)}
               placeholder="e.g. 1h, 2d"

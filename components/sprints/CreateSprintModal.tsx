@@ -204,7 +204,8 @@ export default function CreateSprintModal({ isOpen, onClose, onCreated, projectI
         {!projectId && (
           <Select
             id="modal-sprint-project"
-            label="Project Name *"
+            label="Project Name"
+            required
             value={selectedProjectId}
             onChange={(e) => {
               setSelectedProjectId(e.target.value);
@@ -224,7 +225,7 @@ export default function CreateSprintModal({ isOpen, onClose, onCreated, projectI
 
         <Input
           id="modal-sprint-name"
-          label="Sprint Name (optional)"
+          label="Sprint Name"
           placeholder="e.g. Sprint 1 — User Authentication"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -235,7 +236,7 @@ export default function CreateSprintModal({ isOpen, onClose, onCreated, projectI
         {/* Duration Selector */}
         <Select
           id="modal-sprint-duration"
-          label="Sprint Duration (optional)"
+          label="Sprint Duration"
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           placeholder="Select duration..."
@@ -245,7 +246,7 @@ export default function CreateSprintModal({ isOpen, onClose, onCreated, projectI
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
             id="modal-sprint-start"
-            label="Start Date *"
+            label="Start Date"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -254,7 +255,7 @@ export default function CreateSprintModal({ isOpen, onClose, onCreated, projectI
           />
           <Input
             id="modal-sprint-end"
-            label="End Date *"
+            label="End Date"
             type="date"
             value={endDate}
             onChange={(e) => {

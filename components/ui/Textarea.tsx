@@ -9,11 +9,14 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, hint, className, id, ...props }, ref) => (
+  ({ label, error, hint, className, id, required, ...props }, ref) => (
     <div className="w-full">
       {label && (
         <label htmlFor={id} className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
-          {label}
+          {label.replace(/\s*\*+$/, "")}
+          {(required || label.trim().endsWith("*")) && (
+            <span className="text-rose-500 font-bold ml-1" title="Required field">*</span>
+          )}
         </label>
       )}
       <textarea

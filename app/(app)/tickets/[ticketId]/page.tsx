@@ -8,6 +8,7 @@ import { Ticket, Member, Sprint } from "@/types";
 import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
 import { PageSpinner, ErrorState, Avatar } from "@/components/ui/Misc";
 import { ConfirmDialog } from "@/components/ui/Modal";
+import { getPriorityOptions } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import Input from "@/components/ui/Input";
@@ -35,6 +36,7 @@ export default function TicketDetailPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
+  const [priority, setPriority] = useState("MEDIUM");
   const [estimation, setEstimation] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
   const [sprintId, setSprintId] = useState("");
@@ -45,6 +47,7 @@ export default function TicketDetailPage() {
       setTitle(t.title);
       setDescription(t.description ?? "");
       setStatus(t.status);
+      setPriority(t.priority || "MEDIUM");
       setEstimation(t.estimation ?? "");
       setAssigneeId(t.assignee_id?.toString() ?? "");
       setSprintId(t.sprint_id?.toString() ?? "");
@@ -70,7 +73,7 @@ export default function TicketDetailPage() {
     setSaving(true);
     try {
       const updated = await ticketsApi.update(ticket.id, {
-        title, description, status, estimation: estimation || null,
+        title, description, status, priority, estimation: estimation || null,
         assigneeId: assigneeId ? parseInt(assigneeId) : null,
         sprintId: sprintId ? parseInt(sprintId) : null,
       });
@@ -117,11 +120,12 @@ export default function TicketDetailPage() {
           <Input id="ticket-detail-title" value={title} onChange={(e) => setTitle(e.target.value)} className="text-xl sm:text-2xl font-extrabold !border-transparent hover:!border-slate-200 focus:!border-indigo-500 !px-2" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
           <Select id="td-status" label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={TICKET_STATUS.map((s) => ({ value: s, label: TICKET_STATUS_LABELS[s] }))} />
-          <Input id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="e.g. 1h, 2d" />
-          <Select id="td-assignee" label="Assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} placeholder="Unassigned" options={userList.map((m) => ({ value: m.id.toString(), label: m.full_name }))} />
+          <Select id="td-priority" label="Priority" value={priority} onChange={(e) => setPriority(e.target.value)} options={getPriorityOptions()} />
+          <Select id="td-assignee" label="Assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} placeholder="Unassigned" options={userList.map((m) => ({ value: m.id.toString(), label: m.full_name, icon: <Avatar name={m.full_name} size="xs" /> }))} />
           <Select id="td-sprint" label="Sprint" value={sprintId} onChange={(e) => setSprintId(e.target.value)} placeholder="Backlog" options={sprints.map((s) => ({ value: s.id.toString(), label: s.name ?? `Sprint #${s.id}` }))} />
+          <Input id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="e.g. 1h, 2d" />
         </div>
 
         <div className="mb-6">

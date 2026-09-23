@@ -89,7 +89,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onUpdated }
         />
         <Textarea
           id="edit-project-description"
-          label="Description (optional)"
+          label="Description"
           placeholder="What is the goal of this project?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}

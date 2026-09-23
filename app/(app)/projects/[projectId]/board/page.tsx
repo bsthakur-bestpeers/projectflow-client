@@ -14,7 +14,7 @@ import { ticketsApi, membersApi, sprintsApi, projectsApi } from "@/services/api"
 import { Ticket, Member, Sprint } from "@/types";
 import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
 import { PageSpinner, Avatar } from "@/components/ui/Misc";
-import { AssignmentFlowBadge } from "@/components/ui/Badge";
+import { AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import TicketModal from "@/components/tickets/TicketModal";
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
@@ -44,6 +44,7 @@ function TicketCard({ ticket, onClick, projectPrefix }: { ticket: Ticket; onClic
 
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 flex-wrap gap-1.5">
         <div className="flex items-center gap-1.5 flex-wrap">
+          <PriorityIcon priority={ticket.priority} size="sm" />
           <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">
             {projectPrefix}-{ticket.id}
           </span>
@@ -70,7 +71,10 @@ function DragOverlayCard({ ticket, projectPrefix }: { ticket: Ticket; projectPre
     <div className="bg-white border-2 border-indigo-500 rounded-2xl p-3.5 shadow-xl rotate-2 w-64 space-y-2.5 select-none pointer-events-none">
       <p className="text-sm font-bold text-slate-900">{ticket.title}</p>
       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-        <span className="font-mono font-semibold bg-slate-100 px-1.5 py-0.5 rounded">{projectPrefix}-{ticket.id}</span>
+        <div className="flex items-center gap-1.5">
+          <PriorityIcon priority={ticket.priority} size="xs" />
+          <span className="font-mono font-semibold bg-slate-100 px-1.5 py-0.5 rounded">{projectPrefix}-{ticket.id}</span>
+        </div>
         <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
       </div>
     </div>

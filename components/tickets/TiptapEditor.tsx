@@ -37,11 +37,24 @@ const ToolbarButton = ({ onClick, active, title, children }: {
   </button>
 );
 
-const getFileIcon = (mimetype: string) => {
-  if (mimetype.startsWith("image/")) return "🖼️";
-  if (mimetype === "application/pdf") return "📄";
-  if (mimetype.startsWith("video/")) return "🎬";
-  return "📎";
+const getFileBadge = (mimetype: string, filename: string) => {
+  const ext = filename.split(".").pop()?.toUpperCase() || "FILE";
+  if (mimetype === "application/pdf" || ext === "PDF") {
+    return { label: "PDF", bg: "bg-rose-50 text-rose-700 border-rose-200" };
+  }
+  if (ext === "DOC" || ext === "DOCX") {
+    return { label: ext, bg: "bg-blue-50 text-blue-700 border-blue-200" };
+  }
+  if (ext === "XLS" || ext === "XLSX" || ext === "CSV") {
+    return { label: ext, bg: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+  }
+  if (ext === "ZIP" || ext === "RAR" || ext === "TAR" || ext === "GZ") {
+    return { label: ext, bg: "bg-amber-50 text-amber-700 border-amber-200" };
+  }
+  if (mimetype.startsWith("video/")) {
+    return { label: "VIDEO", bg: "bg-purple-50 text-purple-700 border-purple-200" };
+  }
+  return { label: ext.slice(0, 4), bg: "bg-slate-100 text-slate-700 border-slate-200" };
 };
 
 const formatFileSize = (bytes: number) => {
@@ -102,28 +115,16 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
     }
   });
 
-  // Fallback / legacy: find <img> tags pointing to /uploads/
-  doc.querySelectorAll('img[src*="/uploads/"]').forEach((el) => {
-    const src = el.getAttribute("src") || "";
-    const url = resolveFileUrl(src);
-    const filename = url.split("/").pop() || "";
-    if (filename && !seen.has(filename)) {
-      seen.add(filename);
-      files.push({ id: `${filename}-loaded`, url, filename, originalName: filename, mimetype: inferMimetype(filename), size: 0 });
-    }
-  });
-
   return files;
 };
 
-/** Remove /uploads/ links, images, and data divs from HTML so the editor only shows text content */
+/** Remove legacy /uploads/ links and data divs from HTML, but keep inline <img> tags in the editor! */
 const stripUploadsFromHtml = (html: string): string => {
   if (!html) return html;
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
   doc.querySelectorAll('a[href*="/uploads/"]').forEach((el) => el.remove());
-  doc.querySelectorAll('img[src*="/uploads/"]').forEach((el) => el.remove());
   doc.querySelectorAll("[data-attachments]").forEach((el) => el.remove());
 
   // Remove empty paragraphs left behind
@@ -153,7 +154,9 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
   const [uploadCount, setUploadCount] = useState(0);
   const [attachments, setAttachments] = useState<AttachedFile[]>(initialAttachments.current);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const latestAttachments = useRef<AttachedFile[]>(initialAttachments.current);
   const latestEditorHtml = useRef<string>(cleanContent.current);
@@ -165,7 +168,10 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     onChange(fullHtml);
   };
 
-  const uploadFiles = async (files: File[]) => {
+  const uploadFiles = async (
+    files: File[],
+    options?: { insertIntoEditor?: boolean }
+  ) => {
     if (!files || files.length === 0) return;
     setIsUploading(true);
     setUploadCount(files.length);
@@ -183,13 +189,25 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
       const newAttachments: AttachedFile[] = uploadedFiles.map((f) => ({
         ...f,
         url: resolveFileUrl(f.url),
-        id: `${f.filename}-${Date.now()}`,
+        id: `${f.filename}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       }));
+
+      // If requested or if file is an image and uploaded via Image tool/paste, insert directly into the editor
+      if (options?.insertIntoEditor && editor) {
+        uploadedFiles.forEach((f) => {
+          if (f.mimetype.startsWith("image/")) {
+            editor.chain().focus().setImage({
+              src: resolveFileUrl(f.url),
+              alt: f.originalName || f.filename,
+            }).run();
+          }
+        });
+      }
 
       setAttachments((prev) => {
         const combined = [...prev, ...newAttachments];
         latestAttachments.current = combined;
-        emitChange(latestEditorHtml.current, combined);
+        emitChange(editor ? editor.getHTML() : latestEditorHtml.current, combined);
         return combined;
       });
     } catch (err) {
@@ -223,11 +241,23 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         ),
         "data-placeholder": placeholder ?? defaultPlaceholder,
       },
+      handleClick: (view, pos, event) => {
+        const target = event.target as HTMLElement;
+        if (target.tagName === "IMG") {
+          const src = target.getAttribute("src");
+          if (src) {
+            setPreviewUrl(src);
+            return true;
+          }
+        }
+        return false;
+      },
       handlePaste: (view, event) => {
         if (readOnly) return false;
         const items = event.clipboardData?.items;
         if (!items) return false;
         const pastedFiles: File[] = [];
+        let hasImage = false;
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           if (item.kind === "file") {
@@ -237,13 +267,16 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
               if (file.name === "image.png") {
                 fileToUpload = new File([file], `screenshot-${Date.now()}.png`, { type: file.type });
               }
+              if (fileToUpload.type.startsWith("image/")) {
+                hasImage = true;
+              }
               pastedFiles.push(fileToUpload);
             }
           }
         }
         if (pastedFiles.length > 0) {
           event.preventDefault();
-          uploadFiles(pastedFiles);
+          uploadFiles(pastedFiles, { insertIntoEditor: hasImage });
           return true;
         }
         return false;
@@ -253,7 +286,9 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         const files = event.dataTransfer?.files;
         if (!files || files.length === 0) return false;
         event.preventDefault();
-        uploadFiles(Array.from(files));
+        const fileArray = Array.from(files);
+        const hasImage = fileArray.some((f) => f.type.startsWith("image/"));
+        uploadFiles(fileArray, { insertIntoEditor: hasImage });
         return true;
       },
     },
@@ -277,17 +312,43 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
 
   if (!editor) return null;
 
-  const handleImageClick = () => {
+  const handleFileClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleImageClick = () => {
+    imageInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     const files = Array.from(fileList);
-    await uploadFiles(files);
+    await uploadFiles(files, { insertIntoEditor: false });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList);
+    await uploadFiles(files, { insertIntoEditor: true });
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
+  const insertAttachmentIntoEditor = (att: AttachedFile) => {
+    if (!editor) return;
+    if (att.mimetype.startsWith("image/")) {
+      editor.chain().focus().setImage({
+        src: resolveFileUrl(att.url),
+        alt: att.originalName || att.filename,
+      }).run();
+    } else {
+      editor.chain().focus().insertContent(` <a href="${resolveFileUrl(att.url)}" target="_blank" rel="noopener noreferrer">📎 ${att.originalName}</a> `).run();
     }
   };
 
@@ -307,21 +368,23 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     <>
       <div
         className={cn(
-          "border rounded-md overflow-hidden bg-white transition-all relative",
+          "border rounded-xl overflow-hidden bg-white transition-all relative",
           readOnly ? "border-transparent" : "border-slate-300 hover:border-slate-400",
-          !readOnly && "focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 focus-within:hover:border-blue-500"
+          !readOnly && "focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20"
         )}
       >
         {isUploading && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/75 backdrop-blur-xs z-10 flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
               <span className="text-xs font-semibold text-slate-700">
                 Uploading {uploadCount > 1 ? `${uploadCount} files` : "file"}...
               </span>
             </div>
           </div>
         )}
+
+        {/* Hidden inputs for File Attachments vs Inline Images */}
         <input
           type="file"
           ref={fileInputRef}
@@ -329,8 +392,17 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
           className="hidden"
           multiple
         />
+        <input
+          type="file"
+          ref={imageInputRef}
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+          multiple
+        />
+
         {!readOnly && (
-          <div className="flex items-center gap-0.5 px-2 py-1.5 flex-wrap border-b border-slate-100/80">
+          <div className="flex items-center gap-0.5 px-2 py-1.5 flex-wrap border-b border-slate-100 bg-slate-50/50">
             <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>
             </ToolbarButton>
@@ -370,10 +442,10 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
             
             <div className="w-px h-5 bg-slate-200 mx-1" />
             
-            <ToolbarButton onClick={handleImageClick} title="Attach Files">
+            <ToolbarButton onClick={handleFileClick} title="Attach Files (Docs, PDF, etc.)">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </ToolbarButton>
-            <ToolbarButton onClick={handleImageClick} title="Upload Images">
+            <ToolbarButton onClick={handleImageClick} title="Insert Image (Upload image inline)">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </ToolbarButton>
           </div>
@@ -381,62 +453,116 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         <EditorContent editor={editor} />
       </div>
 
-      {/* Attachments Strip */}
+      {/* Attachments Section */}
       {attachments.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {attachments.map((att) => (
-            <div
-              key={att.id}
-              className="group flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs hover:border-indigo-300 transition-colors"
-            >
-              {att.mimetype.startsWith("image/") ? (
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <span>📎</span>
+              <span>Attachments ({attachments.length})</span>
+            </span>
+            <span className="text-[10px] text-slate-400">Click to preview</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5">
+            {attachments.map((att) => {
+              const isImage = att.mimetype.startsWith("image/");
+              const badge = getFileBadge(att.mimetype, att.originalName);
+
+              return (
                 <div
-                  className="w-8 h-8 rounded border border-slate-200 cursor-pointer overflow-hidden bg-slate-100 flex items-center justify-center shrink-0"
-                  onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
+                  key={att.id}
+                  className={cn(
+                    "group relative flex items-center gap-2.5 rounded-xl border p-2 text-xs transition-all shadow-2xs hover:shadow-xs",
+                    isImage
+                      ? "bg-slate-50/80 border-slate-200/90 hover:border-indigo-300"
+                      : "bg-white border-slate-200/90 hover:border-slate-300"
+                  )}
                 >
-                  <img
-                    src={resolveFileUrl(att.url)}
-                    alt={att.originalName}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      target.style.display = "none";
-                      target.parentElement!.innerHTML = '<span class="text-base">🖼️</span>';
-                    }}
-                  />
+                  {/* Visual Indicator: Thumbnail for Images vs Badge for Documents */}
+                  {isImage ? (
+                    <div
+                      className="w-10 h-10 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 cursor-pointer group-hover:opacity-90 transition-opacity"
+                      onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
+                      title="Click to view image preview"
+                    >
+                      <img
+                        src={resolveFileUrl(att.url)}
+                        alt={att.originalName}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = "none";
+                          target.parentElement!.innerHTML = '<span class="text-lg">🖼️</span>';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-lg border flex flex-col items-center justify-center shrink-0 cursor-pointer font-extrabold text-[10px] tracking-tight shadow-2xs",
+                        badge.bg
+                      )}
+                      onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
+                      title="Click to preview/download document"
+                    >
+                      <span>{badge.label}</span>
+                    </div>
+                  )}
+
+                  {/* Metadata */}
+                  <div className="flex flex-col min-w-0 pr-1">
+                    <span
+                      className="font-bold text-slate-800 truncate max-w-[130px] sm:max-w-[160px] cursor-pointer hover:text-indigo-600 transition-colors"
+                      title={att.originalName}
+                      onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
+                    >
+                      {att.originalName}
+                    </span>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                      {isImage ? (
+                        <span className="font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1 rounded">
+                          Image
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-1 rounded">
+                          File
+                        </span>
+                      )}
+                      {att.size > 0 && <span>{formatFileSize(att.size)}</span>}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    {/* Insert into text button for images */}
+                    {isImage && !readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => insertAttachmentIntoEditor(att)}
+                        className="p-1 rounded-md text-[10px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors cursor-pointer"
+                        title="Insert image into editor text"
+                      >
+                        + Insert
+                      </button>
+                    )}
+
+                    {/* Remove button */}
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAttachment(att)}
+                        className="w-5 h-5 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Remove attachment"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <span
-                  className="text-base cursor-pointer"
-                  onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
-                >
-                  {getFileIcon(att.mimetype)}
-                </span>
-              )}
-              <div className="flex flex-col min-w-0">
-                <span
-                  className="font-semibold text-slate-700 truncate max-w-[120px] cursor-pointer hover:text-indigo-600"
-                  title={att.originalName}
-                  onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
-                >
-                  {att.originalName}
-                </span>
-                {att.size > 0 && (
-                  <span className="text-slate-400 text-[10px]">{formatFileSize(att.size)}</span>
-                )}
-              </div>
-              {!readOnly && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveAttachment(att)}
-                  className="ml-1 w-5 h-5 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                  title="Remove"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              )}
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       )}
 

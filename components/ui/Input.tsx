@@ -36,8 +36,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="w-full">
         {label && (
           <label htmlFor={id} className="block text-xs font-bold text-slate-700 mb-1.5 tracking-tight">
-            {label}
-            {required && <span className="text-rose-500 font-bold ml-1" title="Required field">*</span>}
+            {label.replace(/\s*\*+$/, "")}
+            {(required || label.trim().endsWith("*")) && (
+              <span className="text-rose-500 font-bold ml-1" title="Required field">*</span>
+            )}
           </label>
         )}
         <div className="relative flex items-center">

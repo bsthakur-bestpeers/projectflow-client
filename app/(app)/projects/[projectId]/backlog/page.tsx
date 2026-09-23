@@ -6,7 +6,7 @@ import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi, projectsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
 import { PageSpinner, Avatar, EmptyState } from "@/components/ui/Misc";
-import { AssignmentFlowBadge } from "@/components/ui/Badge";
+import { AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import TicketModal from "@/components/tickets/TicketModal";
 import CreateSprintModal from "@/components/sprints/CreateSprintModal";
@@ -167,9 +167,12 @@ export default function BacklogPage() {
     >
       {/* Left side: Key, Title, Sprint, Estimation, Expired */}
       <div className="flex items-start gap-2.5 sm:gap-3 flex-1 min-w-0">
-        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 mt-0.5 sm:mt-0">
-          {projectPrefix}-{ticket.id}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0 mt-0.5 sm:mt-0">
+          <PriorityIcon priority={ticket.priority} size="sm" />
+          <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-1 rounded-lg">
+            {projectPrefix}-{ticket.id}
+          </span>
+        </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
             {ticket.title}

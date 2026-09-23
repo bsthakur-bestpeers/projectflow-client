@@ -13,6 +13,18 @@ export const TICKET_STATUS_LABELS: Record<string, string> = {
   DONE: "Done",
 };
 
+export const TICKET_PRIORITIES = ["HIGHEST", "HIGH", "MEDIUM", "LOW", "LOWEST"] as const;
+export type TicketPriority = (typeof TICKET_PRIORITIES)[number];
+
+export const TICKET_PRIORITY_LABELS: Record<string, string> = {
+  HIGHEST: "Highest",
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
+  LOWEST: "Lowest",
+};
+
+
 export const PROJECT_STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Active",
   COMPLETED: "Completed",

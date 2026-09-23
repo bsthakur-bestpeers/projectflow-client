@@ -6,7 +6,7 @@ import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi, projectsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
 import { PageSpinner, EmptyState, Avatar } from "@/components/ui/Misc";
-import { TicketStatusBadge, AssignmentFlowBadge } from "@/components/ui/Badge";
+import { TicketStatusBadge, AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import TicketModal from "@/components/tickets/TicketModal";
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
@@ -278,9 +278,12 @@ export default function CurrentSprintPage() {
               className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:px-5 sm:py-4 hover:border-indigo-400 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150 cursor-pointer group shadow-2xs gap-2.5 sm:gap-4"
             >
               <div className="flex items-center gap-2.5 sm:gap-3.5 flex-1 min-w-0">
-                <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-md shrink-0">
-                  {projectPrefix}-{ticket.id}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <PriorityIcon priority={ticket.priority} size="sm" />
+                  <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-md">
+                    {projectPrefix}-{ticket.id}
+                  </span>
+                </div>
                 <span className="text-xs sm:text-[15px] font-bold text-slate-900 group-hover:text-indigo-600 truncate transition-colors min-w-0">
                   {ticket.title}
                 </span>
