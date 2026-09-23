@@ -101,23 +101,33 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [projData, ticketData] = await Promise.all([
+        const [projRes, ticketRes] = await Promise.allSettled([
           projectsApi.list(1, 6),
           ticketsApi.getDashboard(),
         ]);
-        const projs: Project[] = projData.projects || [];
-        setProjects(projs);
-        setAssignedTickets(ticketData.assignedTickets || []);
-        setRecentTickets(ticketData.recentTickets || []);
 
-        // Load active sprints for each project
-        const sprintPromises = projs.map((p: Project) =>
-          sprintsApi.listByProject(p.id).then((sprints: Sprint[]) =>
-            sprints.filter((s: Sprint) => s.status === "ACTIVE")
-          )
-        );
-        const allSprints = (await Promise.all(sprintPromises)).flat();
-        setActiveSprints(allSprints);
+        if (projRes.status === "fulfilled") {
+          const projs: Project[] = projRes.value?.projects || [];
+          setProjects(projs);
+
+          // Load active sprints for each project
+          const sprintPromises = projs.map((p: Project) =>
+            sprintsApi.listByProject(p.id).then((sprints: Sprint[]) =>
+              sprints.filter((s: Sprint) => s.status === "ACTIVE")
+            ).catch(() => [])
+          );
+          const allSprints = (await Promise.all(sprintPromises)).flat();
+          setActiveSprints(allSprints);
+        }
+
+        if (ticketRes.status === "fulfilled") {
+          setAssignedTickets(ticketRes.value?.assignedTickets || []);
+          setRecentTickets(ticketRes.value?.recentTickets || []);
+        }
+
+        if (projRes.status === "rejected" || ticketRes.status === "rejected") {
+          dispatch(addToast({ type: "error", message: "Failed to load some dashboard data." }));
+        }
       } catch {
         dispatch(addToast({ type: "error", message: "Failed to load dashboard data." }));
       } finally {
