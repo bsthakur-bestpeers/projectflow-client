@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { sprintsApi, projectsApi, membersApi, ticketsApi } from "@/services/api";
 import { Sprint, Member, Ticket } from "@/types";
-import { PageSpinner, EmptyState, Avatar } from "@/components/ui/Misc";
+import { PageSpinner, EmptyState, Avatar, SprintsSkeleton } from "@/components/ui/Misc";
 import { TicketStatusBadge, AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -139,7 +139,7 @@ export default function SprintsPage() {
 
 
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <SprintsSkeleton />;
 
   return (
     <div className="p-3 sm:p-6 lg:p-8 w-full min-h-screen">

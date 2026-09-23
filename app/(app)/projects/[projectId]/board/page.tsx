@@ -13,7 +13,7 @@ import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi, projectsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
 import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
-import { PageSpinner, Avatar } from "@/components/ui/Misc";
+import { PageSpinner, Avatar, BoardSkeleton } from "@/components/ui/Misc";
 import { AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import TicketModal from "@/components/tickets/TicketModal";
@@ -342,7 +342,7 @@ export default function BoardPage() {
     DONE: "bg-emerald-500",
   };
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <BoardSkeleton />;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen">

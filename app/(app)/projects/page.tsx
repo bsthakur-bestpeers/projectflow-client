@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { projectsApi } from "@/services/api";
 import { Project } from "@/types";
-import { PageSpinner, EmptyState } from "@/components/ui/Misc";
+import { PageSpinner, EmptyState, ProjectsPageSkeleton } from "@/components/ui/Misc";
 import Button from "@/components/ui/Button";
 import CreateProjectModal from "@/components/projects/CreateProjectModal";
 import EditProjectModal from "@/components/projects/EditProjectModal";
@@ -165,7 +165,7 @@ export default function ProjectsPage() {
     );
   };
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <ProjectsPageSkeleton />;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen">

@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi, projectsApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
-import { PageSpinner, Avatar, EmptyState } from "@/components/ui/Misc";
+import { PageSpinner, Avatar, EmptyState, BacklogSkeleton } from "@/components/ui/Misc";
 import { AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import TicketModal from "@/components/tickets/TicketModal";
@@ -157,7 +157,7 @@ export default function BacklogPage() {
   const expiredTickets = filteredTickets.filter((t) => t.isExpired);
   const unassignedTickets = filteredTickets.filter((t) => !t.isExpired);
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <BacklogSkeleton />;
 
   const renderTicketRow = (ticket: ExtendedTicket) => (
     <div

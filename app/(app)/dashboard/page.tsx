@@ -7,7 +7,7 @@ import { projectsApi, ticketsApi, sprintsApi } from "@/services/api";
 import { APP_NAME } from "@/constants";
 import { Project, Ticket, Sprint } from "@/types";
 import { formatDate, timeAgo, cn } from "@/lib/utils";
-import { PageSpinner, Avatar } from "@/components/ui/Misc";
+import { PageSpinner, Avatar, DashboardSkeleton } from "@/components/ui/Misc";
 import { TicketStatusBadge } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import { CreateProjectModal } from "@/components/projects";
@@ -137,7 +137,7 @@ export default function DashboardPage() {
     load();
   }, [dispatch]);
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <DashboardSkeleton />;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen">

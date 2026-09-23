@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { membersApi, projectsApi, usersApi } from "@/services/api";
 import { Member } from "@/types";
-import { PageSpinner, EmptyState, Avatar } from "@/components/ui/Misc";
+import { PageSpinner, EmptyState, Avatar, MembersSkeleton } from "@/components/ui/Misc";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -149,7 +149,7 @@ export default function MembersPage() {
     }
   };
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <MembersSkeleton />;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full min-h-screen">

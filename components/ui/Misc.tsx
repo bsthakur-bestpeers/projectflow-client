@@ -1,5 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
+import { PageShimmer } from "./Skeleton";
+
+export * from "./Skeleton";
 
 export function Spinner({ className }: { className?: string }) {
   return (
@@ -15,14 +18,7 @@ export function Spinner({ className }: { className?: string }) {
 }
 
 export function PageSpinner() {
-  return (
-    <div className="flex items-center justify-center min-h-[300px]">
-      <div className="flex flex-col items-center gap-3">
-        <Spinner className="h-9 w-9 text-indigo-600" />
-        <span className="text-xs font-semibold text-slate-400 animate-pulse">Loading...</span>
-      </div>
-    </div>
-  );
+  return <PageShimmer />;
 }
 
 export function EmptyState({

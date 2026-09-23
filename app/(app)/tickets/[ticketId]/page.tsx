@@ -6,7 +6,7 @@ import { addToast } from "@/store/uiSlice";
 import { ticketsApi, membersApi, sprintsApi, projectsApi, usersApi } from "@/services/api";
 import { Ticket, Member, Sprint } from "@/types";
 import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
-import { PageSpinner, ErrorState, Avatar } from "@/components/ui/Misc";
+import { PageSpinner, ErrorState, Avatar, TicketDetailSkeleton } from "@/components/ui/Misc";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { getPriorityOptions } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -99,7 +99,7 @@ export default function TicketDetailPage() {
     }
   };
 
-  if (loading) return <PageSpinner />;
+  if (loading) return <TicketDetailSkeleton />;
   if (error || !ticket) return <div className="p-6"><ErrorState message={error ?? "Ticket not found"} /></div>;
 
   const canDelete = projectOwnerId === user?.id || ticket.author_id === user?.id;
