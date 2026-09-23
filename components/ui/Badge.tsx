@@ -269,10 +269,10 @@ export function PriorityBadge({
 
   const bgStyles: Record<string, string> = {
     HIGHEST: "bg-rose-50/80 border-rose-200/80 text-rose-700",
-    HIGH: "bg-orange-50/80 border-orange-200/80 text-orange-700",
+    HIGH: "bg-rose-50/80 border-rose-200/80 text-rose-700",
     MEDIUM: "bg-amber-50/80 border-amber-200/80 text-amber-700",
     LOW: "bg-blue-50/80 border-blue-200/80 text-blue-700",
-    LOWEST: "bg-sky-50/80 border-sky-200/80 text-sky-700",
+    LOWEST: "bg-blue-50/80 border-blue-200/80 text-blue-700",
   };
 
   return (
@@ -292,11 +292,9 @@ export function PriorityBadge({
 }
 
 export const getPriorityOptions = () => [
-  { value: "HIGHEST", label: "Highest", icon: <PriorityIcon priority="HIGHEST" size="sm" /> },
   { value: "HIGH", label: "High", icon: <PriorityIcon priority="HIGH" size="sm" /> },
   { value: "MEDIUM", label: "Medium", icon: <PriorityIcon priority="MEDIUM" size="sm" /> },
   { value: "LOW", label: "Low", icon: <PriorityIcon priority="LOW" size="sm" /> },
-  { value: "LOWEST", label: "Lowest", icon: <PriorityIcon priority="LOWEST" size="sm" /> },
 ];
 
 

@@ -184,10 +184,10 @@ export default function CreateTicketModal({
             <Input
               id="new-ticket-estimation"
               label="Estimation"
-              hint="e.g. 1h, 2d, 3d"
+              hint="e.g. 1.5h, 2.5, 2d"
               value={estimation}
               onChange={(e) => setEstimation(e.target.value)}
-              placeholder="e.g. 1h, 2d"
+              placeholder="e.g. 1.5h, 2.5, 2d"
             />
           </div>
 

@@ -61,12 +61,17 @@ export function getEstimationRemaining(
   if (estimation && createdAt) {
     const created = typeof createdAt === "string" ? new Date(createdAt) : createdAt;
     let durationMs = 0;
-    if (estimation.endsWith("h")) {
-      const hours = parseFloat(estimation.replace("h", ""));
-      durationMs = hours * 60 * 60 * 1000;
-    } else if (estimation.endsWith("d")) {
-      const days = parseFloat(estimation.replace("d", ""));
-      durationMs = days * 24 * 60 * 60 * 1000;
+    const estClean = estimation.trim().toLowerCase();
+    if (estClean.endsWith("h")) {
+      const hours = parseFloat(estClean.slice(0, -1));
+      if (!isNaN(hours)) durationMs = hours * 60 * 60 * 1000;
+    } else if (estClean.endsWith("d")) {
+      const days = parseFloat(estClean.slice(0, -1));
+      if (!isNaN(days)) durationMs = days * 24 * 60 * 60 * 1000;
+    } else if (!isNaN(parseFloat(estClean))) {
+      // Default plain number to hours e.g. 1.5, 2.5
+      const hours = parseFloat(estClean);
+      if (!isNaN(hours)) durationMs = hours * 60 * 60 * 1000;
     }
 
     if (durationMs > 0) {

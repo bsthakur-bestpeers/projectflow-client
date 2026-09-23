@@ -125,7 +125,7 @@ export default function TicketDetailPage() {
           <Select id="td-priority" label="Priority" value={priority} onChange={(e) => setPriority(e.target.value)} options={getPriorityOptions()} />
           <Select id="td-assignee" label="Assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} placeholder="Unassigned" options={userList.map((m) => ({ value: m.id.toString(), label: m.full_name, icon: <Avatar name={m.full_name} size="xs" /> }))} />
           <Select id="td-sprint" label="Sprint" value={sprintId} onChange={(e) => setSprintId(e.target.value)} placeholder="Backlog" options={sprints.map((s) => ({ value: s.id.toString(), label: s.name ?? `Sprint #${s.id}` }))} />
-          <Input id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="e.g. 1h, 2d" />
+          <Input id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="e.g. 1.5h, 2.5, 2d" />
         </div>
 
         <div className="mb-6">
