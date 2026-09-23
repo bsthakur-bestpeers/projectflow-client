@@ -125,8 +125,8 @@ export default function DashboardPage() {
           setRecentTickets(ticketRes.value?.recentTickets || []);
         }
 
-        if (projRes.status === "rejected" || ticketRes.status === "rejected") {
-          dispatch(addToast({ type: "error", message: "Failed to load some dashboard data." }));
+        if (projRes.status === "rejected") {
+          dispatch(addToast({ type: "error", message: "Failed to load projects." }));
         }
       } catch {
         dispatch(addToast({ type: "error", message: "Failed to load dashboard data." }));
