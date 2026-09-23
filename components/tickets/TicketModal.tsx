@@ -105,23 +105,23 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
         size="full"
         externalLink={`/tickets/${ticket.id}`}
       >
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
           {/* Status & Sprint Summary Badges */}
-          <div className="flex items-center gap-3 flex-wrap bg-slate-50/90 p-3 rounded-xl border border-slate-200/80 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-500">Ticket Status:</span>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap bg-slate-50/90 p-2.5 sm:p-3 rounded-xl border border-slate-200/80 text-xs">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Status:</span>
               <TicketStatusBadge status={status} />
             </div>
-            <span className="text-slate-300">|</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-500">Sprint:</span>
-              <span className="font-semibold text-slate-800">
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <div className="flex items-center gap-1.5 shrink-0 min-w-0">
+              <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Sprint:</span>
+              <span className="font-semibold text-slate-800 truncate max-w-[120px] sm:max-w-none text-[11px] sm:text-xs">
                 {sprints.find((s) => s.id.toString() === sprintId)?.name ?? (ticket.sprint?.name ?? `Sprint #${ticket.sprint_id ?? "-"}`)}
               </span>
             </div>
-            <span className="text-slate-300">|</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-slate-500">Flow:</span>
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <div className="flex items-center gap-1.5 min-w-0 shrink">
+              <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Flow:</span>
               <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
               id="ticket-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-base font-bold text-slate-900"
+              className="text-sm sm:text-base font-bold text-slate-900"
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             <TiptapEditor key={`ticket-${ticket.id}`} content={description} onChange={setDescription} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/70">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50/80 p-3 sm:p-3.5 rounded-xl border border-slate-200/70">
             <Select
               id="ticket-status"
               label="Status *"
@@ -168,7 +168,8 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             />
             <Input
               id="ticket-estimation"
-              label="Estimation (1h, 2h, 3h, 4h, 1d, 2d, 3d, 4d, 5d)"
+              label="Estimation"
+              hint="e.g. 1h, 2d, 3d"
               value={estimation}
               onChange={(e) => setEstimation(e.target.value)}
               placeholder="e.g. 1h, 2d"
@@ -176,7 +177,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
           </div>
 
           {/* Meta */}
-          <div className="flex items-center gap-3 text-xs text-slate-500 pt-3 border-t border-slate-100 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-500 pt-3 border-t border-slate-100 flex-wrap">
             <span>Created by <span className="font-semibold text-slate-800">{ticket.author.full_name}</span></span>
             <span>·</span>
             <span>Created {formatDate(ticket.created_at)}</span>
@@ -184,15 +185,37 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             <span>Updated {timeAgo(ticket.updated_at)}</span>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-            <div>
+          {/* Responsive Action Buttons Footer */}
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-3.5 border-t border-slate-100">
+            <div className="w-full sm:w-auto">
               {canDelete && (
-                <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>Delete Ticket</Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setDeleteOpen(true)}
+                  className="w-full sm:w-auto justify-center"
+                >
+                  Delete Ticket
+                </Button>
               )}
             </div>
-            <div className="flex gap-2.5">
-              <Button variant="ghost" onClick={onClose}>Cancel</Button>
-              <Button onClick={handleSave} loading={saving}>Save Changes</Button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="flex-1 sm:flex-initial justify-center"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                loading={saving}
+                className="flex-1 sm:flex-initial justify-center"
+              >
+                Save Changes
+              </Button>
             </div>
           </div>
         </div>

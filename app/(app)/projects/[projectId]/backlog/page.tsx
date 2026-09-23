@@ -163,60 +163,57 @@ export default function BacklogPage() {
     <div
       key={ticket.id}
       onClick={() => setSelectedTicket(ticket)}
-      className="bg-white border border-slate-200/90 hover:border-indigo-400/80 rounded-2xl p-4 sm:p-4.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+      className="bg-white border border-slate-200/90 hover:border-indigo-400/80 rounded-2xl p-3 sm:p-4 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col xl:flex-row xl:items-center justify-between gap-3 group"
     >
-      {/* Left side: Key, Title, Origin */}
-      <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
-        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg shrink-0">
+      {/* Left side: Key, Title, Sprint, Estimation, Expired */}
+      <div className="flex items-start gap-2.5 sm:gap-3 flex-1 min-w-0">
+        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 mt-0.5 sm:mt-0">
           {projectPrefix}-{ticket.id}
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
             {ticket.title}
           </h3>
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 flex-wrap">
             {ticket.sprintName ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50/90 border border-indigo-200/80 px-2.5 py-0.5 rounded-lg">
+              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-indigo-700 bg-indigo-50/90 border border-indigo-200/80 px-2 sm:px-2.5 py-0.5 rounded-lg max-w-full">
                 <span>📋</span>
-                <span>Sprint: {ticket.sprintName}</span>
+                <span className="truncate max-w-[110px] sm:max-w-none">Sprint: {ticket.sprintName}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">
+              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">
                 No sprint assigned
               </span>
             )}
             {ticket.estimation && (
-              <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/80">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/80 shrink-0">
                 Estimation: {ticket.estimation}
               </span>
             )}
+            {isOwner && ticket.expiredDate ? (
+              <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200/80 px-2 sm:px-2.5 py-0.5 rounded-lg shadow-2xs max-w-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                <span className="truncate">Expired {formatDate(ticket.expiredDate)}</span>
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
 
-      {/* Right side: Expired Date Badge, Assignee & Move to Sprint */}
-      <div className="flex items-center gap-3 shrink-0 flex-wrap justify-between sm:justify-end">
-        {isOwner && ticket.expiredDate ? (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200/80 px-2.5 py-1 rounded-xl shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            ⏰ Sprint expired on {formatDate(ticket.expiredDate)}
-          </span>
-        ) : !ticket.sprint_id ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl">
-            <span>📌</span> No Sprint
-          </span>
-        ) : null}
-
-        <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="md" />
+      {/* Right side: Assignee Flow & Move to Sprint */}
+      <div className="flex items-center justify-between xl:justify-end gap-2 sm:gap-3 pt-2.5 xl:pt-0 border-t xl:border-t-0 border-slate-100 flex-wrap sm:flex-nowrap min-w-0">
+        <div className="min-w-0 shrink">
+          <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
+        </div>
 
         {/* Quick Action: Move directly to a sprint */}
         {sprints.length > 0 && (
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
             <select
               value=""
               disabled={movingTicketId === ticket.id}
               onChange={(e) => handleMoveToSprint(ticket.id, parseInt(e.target.value))}
-              className="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/90 rounded-xl px-3 py-1.5 cursor-pointer shadow-2xs outline-none transition-colors"
+              className="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-200/90 rounded-xl px-2.5 sm:px-3 py-1.5 cursor-pointer shadow-2xs outline-none transition-colors whitespace-nowrap"
               title="Schedule ticket into a sprint"
             >
               <option value="" disabled>
@@ -235,85 +232,87 @@ export default function BacklogPage() {
   );
 
   return (
-    <div className="p-6 sm:p-8 min-h-screen w-full">
+    <div className="p-3 sm:p-6 lg:p-8 min-h-screen w-full">
       {/* Backlog Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Backlog</h2>
-            <span className="text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/70 px-2.5 py-0.5 rounded-full shadow-2xs">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Backlog</h2>
+            <span className="text-[10px] sm:text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/70 px-2.5 py-0.5 rounded-full shadow-2xs">
               {tickets.length} Ticket{tickets.length !== 1 ? "s" : ""}
             </span>
             {isOwner && expiredTickets.length > 0 && (
-              <span className="text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+              <span className="text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-full shadow-2xs">
                 {expiredTickets.length} Expired Rollover
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 max-w-xl">
             Review rollover tickets from expired sprints and schedule unassigned work into sprint cycles.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Search */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search backlog..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 bg-white border border-slate-200/90 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none w-44 shadow-2xs transition-all"
-            />
-            <svg
-              className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+            {/* Search */}
+            <div className="relative flex-1 min-w-[140px] sm:w-44">
+              <input
+                type="text"
+                placeholder="Search backlog..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 bg-white border border-slate-200/90 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none shadow-2xs transition-all"
+              />
+              <svg
+                className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
 
-          {/* Assignee Filter Avatars */}
-          <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2 py-1 rounded-xl shadow-2xs">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Assignee:</span>
-            {members.slice(0, 4).map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setSelectedAssigneeId(selectedAssigneeId === m.id ? null : m.id)}
-                title={m.full_name}
-                className={cn(
-                  "p-0.5 rounded-full transition-all cursor-pointer",
-                  selectedAssigneeId === m.id ? "ring-2 ring-indigo-600 scale-110 shadow-xs" : "opacity-75 hover:opacity-100"
-                )}
-              >
-                <Avatar name={m.full_name} size="sm" />
-              </button>
-            ))}
-            {selectedAssigneeId && (
-              <button
-                onClick={() => setSelectedAssigneeId(null)}
-                className="text-[11px] text-indigo-600 hover:underline font-semibold ml-1"
-              >
-                Clear
-              </button>
-            )}
+            {/* Assignee Filter Avatars */}
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2 py-1 rounded-xl shadow-2xs shrink-0">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline mr-0.5">Assignee:</span>
+              {members.slice(0, 4).map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedAssigneeId(selectedAssigneeId === m.id ? null : m.id)}
+                  title={m.full_name}
+                  className={cn(
+                    "p-0.5 rounded-full transition-all cursor-pointer",
+                    selectedAssigneeId === m.id ? "ring-2 ring-indigo-600 scale-110 shadow-xs" : "opacity-75 hover:opacity-100"
+                  )}
+                >
+                  <Avatar name={m.full_name} size="sm" />
+                </button>
+              ))}
+              {selectedAssigneeId && (
+                <button
+                  onClick={() => setSelectedAssigneeId(null)}
+                  className="text-[11px] text-indigo-600 hover:underline font-semibold ml-1"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           {isOwner && (
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="secondary" onClick={() => setCreateTicketOpen(true)} id="backlog-create-ticket-btn">
-                <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button size="sm" variant="secondary" onClick={() => setCreateTicketOpen(true)} id="backlog-create-ticket-btn" className="flex-1 sm:flex-initial justify-center whitespace-nowrap py-1.5 px-2.5 sm:px-3 text-xs">
+                <svg className="w-3.5 h-3.5 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                 </svg>
-                Create Ticket
+                <span>Create Ticket</span>
               </Button>
-              <Button size="sm" onClick={() => setCreateSprintOpen(true)} id="backlog-create-sprint-btn">
-                <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Button size="sm" onClick={() => setCreateSprintOpen(true)} id="backlog-create-sprint-btn" className="flex-1 sm:flex-initial justify-center whitespace-nowrap py-1.5 px-2.5 sm:px-3 text-xs">
+                <svg className="w-3.5 h-3.5 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                 </svg>
-                Create Sprint
+                <span>Create Sprint</span>
               </Button>
             </div>
           )}
@@ -355,12 +354,14 @@ export default function BacklogPage() {
           {/* Section 1: Expired Sprint Rollover Tickets */}
           {expiredTickets.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Expired Sprint Rollovers ({expiredTickets.length})
-                </h3>
-                <span className="text-[11px] text-slate-400 font-medium ml-1">
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Expired Sprint Rollovers ({expiredTickets.length})
+                  </h3>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium">
                   — Incomplete tasks from finished sprint cycles
                 </span>
               </div>
@@ -373,12 +374,14 @@ export default function BacklogPage() {
           {/* Section 2: Unplanned / Fresh Backlog Items */}
           {unassignedTickets.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full bg-indigo-500" />
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Unplanned Backlog ({unassignedTickets.length})
-                </h3>
-                <span className="text-[11px] text-slate-400 font-medium ml-1">
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Unplanned Backlog ({unassignedTickets.length})
+                  </h3>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium">
                   — Ready to be scheduled into an upcoming sprint
                 </span>
               </div>

@@ -45,20 +45,20 @@ export default function ProjectOverviewPage() {
   ];
 
   return (
-    <div className="p-6 sm:p-8 w-full min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 w-full min-h-screen">
       {/* Ticket Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-3.5 mb-6 sm:mb-8">
         {statCards.map((s) => (
-          <div key={s.label} className={`border ${s.border} ${s.bg} rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow`}>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{s.label}</p>
-            <p className={`text-2xl sm:text-3xl font-extrabold ${s.color}`}>{s.value}</p>
+          <div key={s.label} className={`border ${s.border} ${s.bg} rounded-2xl p-3.5 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow`}>
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-1.5">{s.label}</p>
+            <p className={`text-xl sm:text-2xl lg:text-3xl font-extrabold ${s.color}`}>{s.value}</p>
           </div>
         ))}
       </div>
 
       {/* Progress bar */}
       {summary && summary.total > 0 && (
-        <div className="mb-8 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs">
+        <div className="mb-6 sm:mb-8 bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-2xs">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -78,14 +78,14 @@ export default function ProjectOverviewPage() {
       )}
 
       {/* Current Sprint */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Current Sprint</h2>
         {currentSprint ? (
-          <div className="bg-white border border-indigo-200/80 rounded-2xl p-6 shadow-2xs">
+          <div className="bg-white border border-indigo-200/80 rounded-2xl p-4 sm:p-6 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
-                  <h3 className="font-extrabold text-slate-900 text-base">{currentSprint.name ?? `Sprint #${currentSprint.id}`}</h3>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">{currentSprint.name ?? `Sprint #${currentSprint.id}`}</h3>
                   <SprintStatusBadge status={currentSprint.status} />
                 </div>
                 <p className="text-xs text-slate-500">{formatDateRange(currentSprint.start_date, currentSprint.end_date)}</p>
@@ -93,7 +93,7 @@ export default function ProjectOverviewPage() {
                   <span>⚡</span> {daysLeft(currentSprint.end_date)} days remaining
                 </p>
               </div>
-              <div className="flex gap-2.5">
+              <div className="flex gap-2 sm:gap-2.5 flex-wrap">
                 <Link href={`/projects/${projectId}/sprints`}>
                   <Button size="sm" variant="secondary">View Sprints</Button>
                 </Link>
@@ -104,7 +104,7 @@ export default function ProjectOverviewPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white/80 border border-dashed border-slate-300 rounded-2xl p-8 text-center shadow-2xs">
+          <div className="bg-white/80 border border-dashed border-slate-300 rounded-2xl p-6 sm:p-8 text-center shadow-2xs">
             <p className="text-slate-500 text-xs sm:text-sm mb-3">No active sprint in progress.</p>
             <Link href={`/projects/${projectId}/sprints`}>
               <Button size="sm" variant="secondary">View Sprints</Button>
@@ -114,7 +114,7 @@ export default function ProjectOverviewPage() {
       </div>
 
       {/* Quick Navigation Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
         {[
           { label: "Backlog", href: `/projects/${projectId}/backlog`, icon: "📋", desc: "Plan & prioritize" },
           { label: "Kanban Board", href: `/projects/${projectId}/board`, icon: "🗂️", desc: "Live task board" },
@@ -124,7 +124,7 @@ export default function ProjectOverviewPage() {
           <Link
             key={link.href}
             href={link.href}
-            className="bg-white border border-slate-200/80 rounded-2xl p-4.5 hover:border-indigo-400 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-2xs group"
+            className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-4.5 hover:border-indigo-400 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-2xs group"
           >
             <span className="text-xl mb-2 block">{link.icon}</span>
             <p className="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{link.label}</p>

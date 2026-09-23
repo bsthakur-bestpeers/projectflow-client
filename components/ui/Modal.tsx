@@ -50,17 +50,17 @@ export default function Modal({
   }[actualSize];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/30 backdrop-blur-xs animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-slate-900/30 backdrop-blur-xs animate-fade-in">
       <div
-        className={`w-full ${maxW} bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col max-h-[90vh] animate-zoom-in`}
+        className={`w-full ${maxW} bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col max-h-[92vh] animate-zoom-in`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 bg-slate-50/50 shrink-0">
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4.5 border-b border-slate-100 bg-slate-50/50 shrink-0">
+          <div className="min-w-0 flex-1 mr-2">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{subtitle}</p>}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             {externalLink && (
               <a
                 href={externalLink}
@@ -86,7 +86,7 @@ export default function Modal({
           </div>
         </div>
         {/* Body */}
-        <div className="p-6 overflow-y-auto bg-white text-slate-800 flex-1">{children}</div>
+        <div className="p-3.5 sm:p-6 overflow-y-auto overflow-x-hidden bg-white text-slate-800 flex-1 min-w-0">{children}</div>
       </div>
     </div>
   );

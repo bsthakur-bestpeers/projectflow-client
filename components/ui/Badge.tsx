@@ -106,13 +106,16 @@ export function AssignmentFlowBadge({
   if (size === "sm") {
     return (
       <div
-        className="flex items-center gap-1 bg-slate-50 border border-slate-200/90 px-2 py-0.5 rounded-lg text-xs shadow-2xs"
+        className="inline-flex items-center gap-1 bg-slate-50/90 border border-slate-200/90 px-1.5 sm:px-2 py-0.5 rounded-lg text-xs shadow-2xs max-w-full min-w-0 overflow-hidden shrink"
         title={`Assigned by ${author?.full_name ?? "Unknown"} → to ${assignee?.full_name ?? "Unassigned"}`}
       >
         {author && (
-          <div className="flex items-center gap-1">
-            <Avatar name={author.full_name} size="xs" />
-            <span className="font-semibold text-slate-600 max-w-[65px] truncate">
+          <div className="flex items-center gap-1 min-w-0 shrink">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight shrink-0">By:</span>
+            <div className="shrink-0">
+              <Avatar name={author.full_name} size="xs" />
+            </div>
+            <span className="font-semibold text-slate-600 max-w-[42px] sm:max-w-[80px] truncate min-w-0 text-[11px] sm:text-xs">
               {author.full_name.split(" ")[0]}
             </span>
           </div>
@@ -126,14 +129,17 @@ export function AssignmentFlowBadge({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
         {assignee ? (
-          <div className="flex items-center gap-1">
-            <Avatar name={assignee.full_name} size="xs" />
-            <span className="font-bold text-indigo-700 max-w-[65px] truncate">
+          <div className="flex items-center gap-1 min-w-0 shrink">
+            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight shrink-0">To:</span>
+            <div className="shrink-0">
+              <Avatar name={assignee.full_name} size="xs" />
+            </div>
+            <span className="font-bold text-indigo-700 max-w-[42px] sm:max-w-[80px] truncate min-w-0 text-[11px] sm:text-xs">
               {assignee.full_name.split(" ")[0]}
             </span>
           </div>
         ) : (
-          <span className="text-xs text-slate-400 italic">Unassigned</span>
+          <span className="text-[10px] sm:text-xs text-slate-400 italic truncate min-w-0">Unassigned</span>
         )}
       </div>
     );
@@ -141,20 +147,22 @@ export function AssignmentFlowBadge({
 
   return (
     <div
-      className="flex items-center gap-2 bg-slate-50/90 border border-slate-200/90 px-2.5 py-1 rounded-xl shadow-2xs"
+      className="inline-flex items-center gap-1.5 sm:gap-2 bg-slate-50/90 border border-slate-200/90 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl shadow-2xs max-w-full min-w-0 overflow-hidden shrink"
       title={`Assigned by ${author?.full_name ?? "Unknown"} → to ${assignee?.full_name ?? "Unassigned"}`}
     >
       {author && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">By:</span>
-          <Avatar name={author.full_name} size="xs" />
-          <span className="text-xs font-semibold text-slate-700 max-w-[95px] truncate">
+        <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 shrink">
+          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-tight shrink-0">By:</span>
+          <div className="shrink-0">
+            <Avatar name={author.full_name} size="xs" />
+          </div>
+          <span className="text-[11px] sm:text-xs font-semibold text-slate-700 max-w-[50px] sm:max-w-[100px] truncate min-w-0">
             {author.full_name}
           </span>
         </div>
       )}
       <svg
-        className="w-3 h-3 text-indigo-500 shrink-0 mx-0.5"
+        className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-500 shrink-0 mx-0.5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -162,15 +170,17 @@ export function AssignmentFlowBadge({
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
       </svg>
       {assignee ? (
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-indigo-600 uppercase tracking-tight">To:</span>
-          <Avatar name={assignee.full_name} size="xs" />
-          <span className="text-xs font-bold text-indigo-700 max-w-[95px] truncate">
+        <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 shrink">
+          <span className="text-[10px] sm:text-xs font-bold text-indigo-600 uppercase tracking-tight shrink-0">To:</span>
+          <div className="shrink-0">
+            <Avatar name={assignee.full_name} size="xs" />
+          </div>
+          <span className="text-[11px] sm:text-xs font-bold text-indigo-700 max-w-[50px] sm:max-w-[100px] truncate min-w-0">
             {assignee.full_name}
           </span>
         </div>
       ) : (
-        <span className="text-xs font-medium text-slate-400 italic">Unassigned</span>
+        <span className="text-xs font-medium text-slate-400 italic truncate min-w-0">Unassigned</span>
       )}
     </div>
   );

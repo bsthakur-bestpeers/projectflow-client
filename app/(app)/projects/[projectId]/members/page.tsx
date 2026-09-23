@@ -152,7 +152,7 @@ export default function MembersPage() {
   if (loading) return <PageSpinner />;
 
   return (
-    <div className="p-6 sm:p-8 w-full min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 w-full min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Team Members</h2>

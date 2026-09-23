@@ -142,7 +142,7 @@ export default function SprintsPage() {
   if (loading) return <PageSpinner />;
 
   return (
-    <div className="p-6 sm:p-8 w-full min-h-screen">
+    <div className="p-3 sm:p-6 lg:p-8 w-full min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Sprints</h2>
@@ -308,25 +308,29 @@ export default function SprintsPage() {
                           <div
                             key={ticket.id}
                             onClick={() => setSelectedTicket(ticket)}
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/70 hover:bg-indigo-50/40 border border-slate-200/70 hover:border-indigo-200/80 cursor-pointer transition-all group gap-2"
+                            className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 rounded-xl bg-slate-50/70 hover:bg-indigo-50/40 border border-slate-200/70 hover:border-indigo-200/80 cursor-pointer transition-all group gap-2 sm:gap-3"
                           >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                              <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md shrink-0">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                              <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-md shrink-0">
                                 {projectPrefix}-{ticket.id}
                               </span>
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 truncate">
+                              <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-indigo-600 truncate min-w-0">
                                 {ticket.title}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 justify-between sm:justify-end w-full sm:w-auto pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
                               {ticket.estimation && (
-                                <span className="text-[10px] font-semibold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200/80">
+                                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200/80 shrink-0">
                                   {ticket.estimation}
                                 </span>
                               )}
 
-                              <TicketStatusBadge status={ticket.status} />
-                              <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
+                              <div className="shrink-0">
+                                <TicketStatusBadge status={ticket.status} />
+                              </div>
+                              <div className="min-w-0 shrink">
+                                <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
+                              </div>
                             </div>
                           </div>
                         ))}

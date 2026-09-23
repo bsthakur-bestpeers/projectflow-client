@@ -4,7 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, resolveFileUrl } from "@/lib/utils";
 import { uploadApi, UploadedFile } from "@/services/api";
 import FilePreviewModal from "./../ui/FilePreviewModal";
 
@@ -50,15 +50,6 @@ const formatFileSize = (bytes: number) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-/** Strip the absolute backend host from upload URLs so the frontend proxy handles them */
-const toRelativeUploadUrl = (url: string): string => {
-  try {
-    const u = new URL(url);
-    if (u.pathname.startsWith("/uploads/")) return u.pathname;
-  } catch { /* not a full URL, return as-is */ }
-  return url;
-};
-
 /** Infer mimetype from filename extension */
 const inferMimetype = (filename: string): string => {
   const ext = filename.split(".").pop()?.toLowerCase() || "";
@@ -92,7 +83,7 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
         parsed.forEach((f: { url: string; filename: string; originalName: string; mimetype: string; size: number }) => {
           if (f && f.filename && !seen.has(f.filename)) {
             seen.add(f.filename);
-            files.push({ ...f, id: `${f.filename}-loaded` });
+            files.push({ ...f, url: resolveFileUrl(f.url), id: `${f.filename}-loaded` });
           }
         });
       }
@@ -102,7 +93,7 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
   // Fallback / legacy: find <a> tags pointing to /uploads/
   doc.querySelectorAll('a[href*="/uploads/"]').forEach((el) => {
     const href = el.getAttribute("href") || "";
-    const url = toRelativeUploadUrl(href);
+    const url = resolveFileUrl(href);
     const filename = url.split("/").pop() || "";
     if (filename && !seen.has(filename)) {
       seen.add(filename);
@@ -114,7 +105,7 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
   // Fallback / legacy: find <img> tags pointing to /uploads/
   doc.querySelectorAll('img[src*="/uploads/"]').forEach((el) => {
     const src = el.getAttribute("src") || "";
-    const url = toRelativeUploadUrl(src);
+    const url = resolveFileUrl(src);
     const filename = url.split("/").pop() || "";
     if (filename && !seen.has(filename)) {
       seen.add(filename);
@@ -191,7 +182,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
 
       const newAttachments: AttachedFile[] = uploadedFiles.map((f) => ({
         ...f,
-        url: toRelativeUploadUrl(f.url),
+        url: resolveFileUrl(f.url),
         id: `${f.filename}-${Date.now()}`,
       }));
 
@@ -401,10 +392,10 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
               {att.mimetype.startsWith("image/") ? (
                 <div
                   className="w-8 h-8 rounded border border-slate-200 cursor-pointer overflow-hidden bg-slate-100 flex items-center justify-center shrink-0"
-                  onClick={() => setPreviewUrl(att.url)}
+                  onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
                 >
                   <img
-                    src={att.url}
+                    src={resolveFileUrl(att.url)}
                     alt={att.originalName}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -417,7 +408,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
               ) : (
                 <span
                   className="text-base cursor-pointer"
-                  onClick={() => setPreviewUrl(att.url)}
+                  onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
                 >
                   {getFileIcon(att.mimetype)}
                 </span>
@@ -426,7 +417,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
                 <span
                   className="font-semibold text-slate-700 truncate max-w-[120px] cursor-pointer hover:text-indigo-600"
                   title={att.originalName}
-                  onClick={() => setPreviewUrl(att.url)}
+                  onClick={() => setPreviewUrl(resolveFileUrl(att.url))}
                 >
                   {att.originalName}
                 </span>

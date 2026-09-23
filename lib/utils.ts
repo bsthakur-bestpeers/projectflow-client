@@ -115,3 +115,28 @@ export function getEstimationRemaining(
   return null;
 }
 
+/**
+ * Resolves a file URL ensuring it is absolute and points to the backend origin
+ * even if stored as a relative path (/uploads/...) or across production/local environments.
+ */
+export function resolveFileUrl(url?: string | null): string {
+  if (!url) return "";
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  ) {
+    return url;
+  }
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+  try {
+    const apiOrigin = new URL(apiUrl).origin;
+    const cleanPath = url.startsWith("/") ? url : `/${url}`;
+    return `${apiOrigin}${cleanPath}`;
+  } catch {
+    return url;
+  }
+}
+

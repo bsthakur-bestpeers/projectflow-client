@@ -130,9 +130,9 @@ export default function DashboardPage() {
   if (loading) return <PageSpinner />;
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen">
       {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white/80 border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs backdrop-blur-xs relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 bg-white/80 border border-slate-200/80 rounded-2xl p-5 sm:p-8 shadow-xs backdrop-blur-xs relative overflow-hidden">
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
         <div>
           <div className="flex items-center gap-2 mb-1">

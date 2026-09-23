@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout } from "@/store/authSlice";
-import { addToast } from "@/store/uiSlice";
+import { addToast, toggleSidebar } from "@/store/uiSlice";
 import { PageSpinner } from "@/components/ui/Misc";
 import { Avatar } from "@/components/ui/Misc";
 import { APP_NAME } from "@/constants";
@@ -38,9 +38,21 @@ function AdminNavbar() {
   };
 
   return (
-    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
-      <div className="flex items-center gap-3 sm:gap-4">
-        <Link href="/admin/users" className="flex items-center gap-2.5 group">
+    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Hamburger Menu Toggle (mobile & tablet < lg) */}
+        <button
+          type="button"
+          onClick={() => dispatch(toggleSidebar())}
+          className="lg:hidden p-1.5 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+          aria-label="Toggle navigation menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <Link href="/admin/users" className="flex items-center gap-2 sm:gap-2.5 group">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -119,9 +131,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-slate-50/60 flex flex-col">
       <AdminNavbar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative">
         <AdminSidebar />
-        <main className="flex-1 overflow-x-hidden min-w-0 bg-transparent p-6">
+        <main className="flex-1 overflow-x-hidden min-w-0 bg-transparent p-4 sm:p-6">
           {children}
         </main>
       </div>

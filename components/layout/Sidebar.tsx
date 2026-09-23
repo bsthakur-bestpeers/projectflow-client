@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
-import { addToast } from "@/store/uiSlice";
+import { addToast, closeSidebar } from "@/store/uiSlice";
 import { projectsApi } from "@/services/api";
 import { Project } from "@/types";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Misc";
+import { APP_NAME } from "@/constants";
 
 const projectColors = [
   "from-indigo-500 to-indigo-600",
@@ -24,6 +25,7 @@ export default function Sidebar() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
+  const sidebarOpen = useAppSelector((s) => s.ui.sidebarOpen);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -32,6 +34,10 @@ export default function Sidebar() {
       setProjects(data.projects || []);
     }).catch(() => {});
   }, [user?.id, pathname]);
+
+  useEffect(() => {
+    dispatch(closeSidebar());
+  }, [pathname, dispatch]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -46,19 +52,60 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-60 shrink-0 bg-white/70 border-r border-slate-200/80 flex flex-col h-[calc(100vh-3.5rem)] sticky top-14 backdrop-blur-sm">
-      <div className="flex-1 py-4 overflow-y-auto space-y-5">
-        {/* Navigation Section */}
-        <div className="px-3 space-y-1 text-xs">
-          <Link
-            href="/dashboard"
-            className={cn(
-              "flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-all",
-              pathname === "/dashboard"
-                ? "bg-indigo-50/90 text-indigo-700 shadow-2xs border border-indigo-100"
-                : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
-            )}
+    <>
+      {/* Mobile/Tablet Backdrop overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden animate-fade-in"
+          onClick={() => dispatch(closeSidebar())}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={cn(
+          "bg-white/95 lg:bg-white/70 border-r border-slate-200/80 flex flex-col backdrop-blur-md transition-transform duration-300 ease-in-out",
+          // Desktop: sticky side navigation
+          "lg:translate-x-0 lg:static lg:w-60 lg:shrink-0 lg:h-[calc(100vh-3.5rem)] lg:sticky lg:top-14 lg:z-10",
+          // Mobile & Tablet: full height drawer
+          "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl lg:shadow-none",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}
+      >
+        {/* Mobile / Tablet Drawer Header with Close button */}
+        <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 lg:hidden bg-slate-50/50">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="font-extrabold text-slate-900 text-sm tracking-tight">{APP_NAME}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => dispatch(closeSidebar())}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Close sidebar"
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex-1 py-4 overflow-y-auto space-y-5">
+          {/* Navigation Section */}
+          <div className="px-3 space-y-1 text-xs">
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-all",
+                pathname === "/dashboard"
+                  ? "bg-indigo-50/90 text-indigo-700 shadow-2xs border border-indigo-100"
+                  : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
+              )}
+            >
             <svg className={cn("w-4 h-4", pathname === "/dashboard" ? "text-indigo-600" : "text-slate-400")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
@@ -192,5 +239,6 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
-  );
+  </>
+);
 }

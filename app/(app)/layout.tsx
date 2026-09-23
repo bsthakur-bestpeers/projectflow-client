@@ -33,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50/60 aurora-bg flex flex-col">
       <Navbar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative">
         <Sidebar />
         <main className="flex-1 overflow-x-hidden min-w-0 bg-transparent">{children}</main>
       </div>

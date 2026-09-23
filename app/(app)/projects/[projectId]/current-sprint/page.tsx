@@ -171,9 +171,9 @@ export default function CurrentSprintPage() {
   const progress = tickets.length > 0 ? Math.round((done / tickets.length) * 100) : 0;
 
   return (
-    <div className="p-6 sm:p-8 w-full min-h-screen">
+    <div className="p-3 sm:p-6 lg:p-8 w-full min-h-screen">
       {/* Sprint Hero Card */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 mb-8 shadow-2xs">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
@@ -275,19 +275,19 @@ export default function CurrentSprintPage() {
             <div
               key={ticket.id}
               onClick={() => setSelectedTicket(ticket)}
-              className="flex items-center justify-between bg-white border border-slate-200/90 rounded-2xl px-5 py-4 hover:border-indigo-400 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150 cursor-pointer group shadow-2xs gap-4"
+              className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:px-5 sm:py-4 hover:border-indigo-400 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150 cursor-pointer group shadow-2xs gap-2.5 sm:gap-4"
             >
-              <div className="flex items-center gap-3.5 flex-1 min-w-0">
-                <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3.5 flex-1 min-w-0">
+                <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 sm:py-1 rounded-md shrink-0">
                   {projectPrefix}-{ticket.id}
                 </span>
-                <span className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-indigo-600 truncate transition-colors">
+                <span className="text-xs sm:text-[15px] font-bold text-slate-900 group-hover:text-indigo-600 truncate transition-colors min-w-0">
                   {ticket.title}
                 </span>
               </div>
-              <div className="flex items-center gap-3 shrink-0 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 justify-between sm:justify-end w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 {ticket.estimation && (
-                  <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/80">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 sm:px-2.5 py-0.5 rounded-md border border-slate-200/80 shrink-0">
                     Estimation: {ticket.estimation}
                   </span>
                 )}
@@ -295,14 +295,18 @@ export default function CurrentSprintPage() {
                   const estInfo = getEstimationRemaining(ticket.created_at, ticket.estimation, activeSprint?.end_date, ticket.status);
                   if (!estInfo) return null;
                   return (
-                    <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200/80 flex items-center gap-1">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 sm:px-2.5 py-0.5 rounded-md border border-amber-200/80 flex items-center gap-1 shrink-0">
                       <span>⏳</span>
                       <span>{estInfo.remainingText}</span>
                     </span>
                   );
                 })()}
-                <TicketStatusBadge status={ticket.status} />
-                <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
+                <div className="shrink-0">
+                  <TicketStatusBadge status={ticket.status} />
+                </div>
+                <div className="min-w-0 shrink">
+                  <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
+                </div>
               </div>
             </div>
           ))}

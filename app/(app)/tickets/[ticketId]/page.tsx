@@ -140,9 +140,17 @@ export default function TicketDetailPage() {
           <span>Updated {timeAgo(ticket.updated_at)}</span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>{canDelete && <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>Delete Ticket</Button>}</div>
-          <Button onClick={handleSave} loading={saving} id="save-ticket-btn">Save Changes</Button>
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
+          <div className="w-full sm:w-auto">
+            {canDelete && (
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto justify-center">
+                Delete Ticket
+              </Button>
+            )}
+          </div>
+          <Button onClick={handleSave} loading={saving} id="save-ticket-btn" size="sm" className="w-full sm:w-auto justify-center">
+            Save Changes
+          </Button>
         </div>
       </div>
 

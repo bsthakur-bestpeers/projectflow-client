@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { getInitials } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
-import { addToast } from "@/store/uiSlice";
+import { addToast, toggleSidebar } from "@/store/uiSlice";
 import { searchApi, SearchResults } from "@/services/api";
 import { APP_NAME } from "@/constants";
 import { Avatar } from "@/components/ui/Misc";
@@ -113,20 +113,32 @@ export default function Navbar() {
     (searchResults?.tickets.length || 0);
 
   return (
-    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
+    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
       {/* Left Section: Brand & Workspace Identity */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Hamburger Menu Toggle (mobile & tablet < lg) */}
+        <button
+          type="button"
+          onClick={() => dispatch(toggleSidebar())}
+          className="lg:hidden p-1.5 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+          aria-label="Toggle navigation menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <Link href="/dashboard" className="flex items-center gap-2 sm:gap-2.5 group">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-slate-900 text-sm tracking-tight">
+            <span className="font-extrabold text-slate-900 text-sm tracking-tight hidden sm:inline-block">
               {APP_NAME}
             </span>
-            <span className="hidden sm:inline-block text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80 px-2 py-0.5 rounded-full">
+            <span className="hidden md:inline-block text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80 px-2 py-0.5 rounded-full">
               Workspace
             </span>
           </div>
@@ -134,18 +146,18 @@ export default function Navbar() {
       </div>
 
       {/* Center Search Bar (Global Quick Jump) */}
-      <div className="flex-1 max-w-xs sm:max-w-md mx-4 relative" ref={searchRef}>
+      <div className="flex-1 max-w-[170px] sm:max-w-md mx-2 sm:mx-4 relative" ref={searchRef}>
         <div className="relative">
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search projects, tickets, sprints..."
+            placeholder="Search..."
             value={searchQuery}
             onFocus={() => {
               if (searchQuery.trim() && searchResults) setSearchOpen(true);
             }}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-16 py-1.5 text-xs text-slate-800 placeholder-slate-400 bg-slate-100/70 border border-slate-200/80 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all shadow-2xs"
+            className="w-full pl-7 sm:pl-8 pr-7 sm:pr-16 py-1.5 text-xs text-slate-800 placeholder-slate-400 bg-slate-100/70 border border-slate-200/80 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all shadow-2xs"
           />
           <svg
             className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"

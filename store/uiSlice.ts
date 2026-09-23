@@ -9,9 +9,10 @@ export interface Toast {
 
 interface UiState {
   toasts: Toast[];
+  sidebarOpen: boolean;
 }
 
-const initialState: UiState = { toasts: [] };
+const initialState: UiState = { toasts: [], sidebarOpen: false };
 
 let toastCounter = 0;
 
@@ -29,8 +30,17 @@ const uiSlice = createSlice({
     removeToast(state, action: PayloadAction<string>) {
       state.toasts = state.toasts.filter((t) => t.id !== action.payload);
     },
+    toggleSidebar(state) {
+      state.sidebarOpen = !state.sidebarOpen;
+    },
+    setSidebarOpen(state, action: PayloadAction<boolean>) {
+      state.sidebarOpen = action.payload;
+    },
+    closeSidebar(state) {
+      state.sidebarOpen = false;
+    },
   },
 });
 
-export const { addToast, removeToast } = uiSlice.actions;
+export const { addToast, removeToast, toggleSidebar, setSidebarOpen, closeSidebar } = uiSlice.actions;
 export default uiSlice.reducer;
