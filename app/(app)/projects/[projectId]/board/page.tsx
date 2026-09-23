@@ -31,7 +31,7 @@ function TicketCard({ ticket, onClick, projectPrefix }: { ticket: Ticket; onClic
       {...listeners}
       onClick={onClick}
       className={cn(
-        "bg-white border border-slate-200/90 rounded-2xl p-3.5 cursor-grab active:cursor-grabbing",
+        "bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 cursor-grab active:cursor-grabbing shrink-0 w-full flex-none",
         "hover:border-indigo-400/80 hover:shadow-md hover:-translate-y-0.5 shadow-2xs transition-all duration-150 space-y-2.5 group",
         isDragging && "opacity-40 ring-2 ring-indigo-500 scale-95"
       )}
@@ -102,12 +102,13 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-slate-100/70 border border-slate-200/80 rounded-2xl p-3.5 min-h-[540px] flex flex-col backdrop-blur-2xs shadow-2xs transition-colors",
+        "bg-slate-100/70 border border-slate-200/80 rounded-2xl p-3 sm:p-3.5 flex flex-col backdrop-blur-2xs shadow-2xs transition-colors",
+        "h-[500px] lg:h-[calc(100vh-280px)] min-h-[460px] max-h-[500px] lg:max-h-[calc(100vh-280px)]",
         isOver && "ring-2 ring-indigo-500/60 bg-indigo-50/40 border-indigo-300"
       )}
     >
       {/* Column Header */}
-      <div className="flex items-center justify-between mb-3 px-1.5">
+      <div className="flex items-center justify-between mb-3 px-1.5 shrink-0">
         <div className="flex items-center gap-2">
           <span className={cn("w-2 h-2 rounded-full", iconClass)} />
           <span className="text-xs font-bold text-slate-700 tracking-tight">
@@ -119,9 +120,9 @@ function KanbanColumn({
         </span>
       </div>
 
-      {/* Sortable tickets container */}
+      {/* Sortable tickets container with smooth scrolling */}
       <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2.5 flex-1 min-h-[120px] flex flex-col">
+        <div className="space-y-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden pr-1.5 -mr-1 p-0.5 scroll-smooth custom-scrollbar">
           {tickets.length === 0 ? (
             <div className="flex-1 flex items-center justify-center border border-dashed border-slate-300/70 rounded-xl p-4 text-center text-slate-400 text-xs select-none min-h-[100px]">
               Drop tickets here
@@ -345,7 +346,7 @@ export default function BoardPage() {
   if (loading) return <BoardSkeleton />;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
+    <div className="p-4 sm:p-6 lg:px-8 lg:py-6 w-full flex flex-col">
       {/* Board Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">

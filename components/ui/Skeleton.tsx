@@ -284,7 +284,7 @@ export function BoardSkeleton() {
         {["To Do", "In Progress", "In Review", "Done"].map((col, idx) => (
           <div
             key={col}
-            className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs space-y-3 min-h-[500px]"
+            className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3 sm:p-3.5 shadow-2xs flex flex-col h-[500px] lg:h-[calc(100vh-280px)] min-h-[460px] max-h-[500px] lg:max-h-[calc(100vh-280px)] space-y-3"
           >
             {/* Column Header */}
             <div className="flex items-center justify-between px-1">
