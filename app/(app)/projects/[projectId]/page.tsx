@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useAppDispatch } from "@/store";
 import { addToast } from "@/store/uiSlice";
-import { projectsApi, sprintsApi } from "@/services/api";
-import { TicketSummary, Sprint } from "@/types";
+import { projectsApi, sprintsApi, ticketsApi } from "@/services/api";
+import { TicketSummary, Sprint, Ticket } from "@/types";
 import { PageSpinner } from "@/components/ui/Misc";
 import { SprintStatusBadge } from "@/components/ui/Badge";
 import { formatDateRange, daysLeft } from "@/lib/utils";
@@ -23,8 +23,23 @@ export default function ProjectOverviewPage() {
     Promise.all([
       projectsApi.getSummary(id),
       sprintsApi.listByProject(id),
-    ]).then(([s, sp]) => {
-      setSummary(s.summary);
+      ticketsApi.listByProject(id, { limit: 200 }),
+    ]).then(([s, sp, allTicketsRes]) => {
+      const summaryData = s.summary;
+      const rawTickets = allTicketsRes?.tickets || [];
+      const calculatedBacklog = rawTickets.filter((t: Ticket) => !t.sprint_id && t.status !== "DONE").length;
+      const backlogCount = summaryData?.BACKLOG ?? summaryData?.backlog ?? calculatedBacklog;
+
+      const totalCount = summaryData?.total !== undefined && (summaryData.BACKLOG !== undefined || summaryData.backlog !== undefined)
+        ? summaryData.total
+        : (summaryData?.total ?? 0) + calculatedBacklog;
+
+      setSummary({
+        ...summaryData,
+        BACKLOG: backlogCount,
+        backlog: backlogCount,
+        total: totalCount,
+      });
       setSprints(sp);
     }).catch(() => dispatch(addToast({ type: "error", message: "Failed to load overview." })))
       .finally(() => setLoading(false));
@@ -38,6 +53,7 @@ export default function ProjectOverviewPage() {
     null;
   const statCards = [
     { label: "Total Tickets", value: summary?.total ?? 0, color: "text-slate-900", bg: "bg-white", border: "border-slate-200/80" },
+    { label: "Backlog", value: summary?.BACKLOG ?? summary?.backlog ?? 0, color: "text-slate-500", bg: "bg-white", border: "border-slate-200/80" },
     { label: "To Do", value: summary?.TODO ?? 0, color: "text-slate-600", bg: "bg-white", border: "border-slate-200/80" },
     { label: "In Progress", value: summary?.IN_PROGRESS ?? 0, color: "text-indigo-600", bg: "bg-white", border: "border-slate-200/80" },
     { label: "In Review", value: summary?.IN_REVIEW ?? 0, color: "text-amber-600", bg: "bg-white", border: "border-slate-200/80" },
@@ -47,7 +63,7 @@ export default function ProjectOverviewPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full min-h-screen">
       {/* Ticket Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-3.5 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3.5 mb-6 sm:mb-8">
         {statCards.map((s) => (
           <div key={s.label} className={`border ${s.border} ${s.bg} rounded-2xl p-3.5 sm:p-5 shadow-2xs hover:shadow-xs transition-shadow`}>
             <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-1.5">{s.label}</p>

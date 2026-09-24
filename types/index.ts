@@ -28,6 +28,8 @@ export interface Project {
 
 export interface TicketSummary {
   total: number;
+  BACKLOG?: number;
+  backlog?: number;
   TODO: number;
   IN_PROGRESS: number;
   IN_REVIEW: number;

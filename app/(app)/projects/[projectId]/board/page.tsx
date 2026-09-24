@@ -18,7 +18,7 @@ import { AssignmentFlowBadge, PriorityIcon } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import TicketModal from "@/components/tickets/TicketModal";
 import CreateTicketModal from "@/components/tickets/CreateTicketModal";
-import { getEstimationRemaining, cn, getInitials } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 function TicketCard({ ticket, onClick, projectPrefix }: { ticket: Ticket; onClick: () => void; projectPrefix: string }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ticket.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -238,7 +238,7 @@ export default function BoardPage() {
 
       // All members can see all tickets on the board
 
-      // Filter out tickets that are expired / rolled over into the backlog
+      // Filter out tickets belonging to cancelled sprints or invalid sprint IDs
       const sprintMap = new Map<number, Sprint>();
       (sp as Sprint[]).forEach((s) => sprintMap.set(s.id, s));
 
@@ -246,15 +246,7 @@ export default function BoardPage() {
         if (!ticket.sprint_id) return false;
         const sprint = sprintMap.get(ticket.sprint_id);
         if (!sprint) return false;
-        if (getDynamicStatus(sprint) === "COMPLETED" || sprint.status === "CANCELLED") return false;
-
-        // Tickets marked DONE stay in DONE column
-        if (ticket.status === "DONE") return true;
-
-        // If estimation or sprint has expired, ticket has rolled over to Backlog
-        const estInfo = getEstimationRemaining(ticket.created_at, ticket.estimation, sprint.end_date);
-        if (estInfo?.isExpired) return false;
-
+        if (sprint.status === "CANCELLED") return false;
         return true;
       });
 
