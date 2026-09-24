@@ -9,6 +9,7 @@ import { PageSpinner, EmptyState, ProjectsPageSkeleton } from "@/components/ui/M
 import Button from "@/components/ui/Button";
 import CreateProjectModal from "@/components/projects/CreateProjectModal";
 import EditProjectModal from "@/components/projects/EditProjectModal";
+import ImportProjectModal from "@/components/projects/ImportProjectModal";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -177,23 +179,37 @@ export default function ProjectsPage() {
             {createdProjects.length} created · {assignedProjects.length} assigned
           </p>
         </div>
-        {user?.role === "ADMIN" ? (
-          <Link href="/admin/users">
-            <Button variant="secondary" className="border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100">
-              <svg className="w-4 h-4 text-purple-600 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              Admin Console
-            </Button>
-          </Link>
-        ) : (
-          <Button onClick={() => setCreateOpen(true)} id="projects-create-btn">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setImportOpen(true)}
+            className="border-slate-200/90 text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 shadow-2xs font-semibold text-xs py-2 px-3 sm:px-4"
+            id="projects-import-btn"
+          >
+            <svg className="w-3.5 h-3.5 text-indigo-600 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            New Project
+            Import Excel
           </Button>
-        )}
+
+          {user?.role === "ADMIN" ? (
+            <Link href="/admin/users">
+              <Button variant="secondary" className="border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100">
+                <svg className="w-4 h-4 text-purple-600 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Admin Console
+              </Button>
+            </Link>
+          ) : (
+            <Button onClick={() => setCreateOpen(true)} id="projects-create-btn">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Project
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Controls: 2 Filter Tabs + Search */}
@@ -326,6 +342,12 @@ export default function ProjectsPage() {
         onCreated={(p) => {
           setProjects((prev) => [p, ...prev]);
         }}
+      />
+
+      <ImportProjectModal
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        onSuccess={loadProjects}
       />
 
       <EditProjectModal

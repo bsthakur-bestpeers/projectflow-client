@@ -19,6 +19,40 @@ export const projectsApi = {
 
   delete: (id: number): Promise<void> =>
     api.delete(`/projects/${id}`).then(() => undefined),
+
+  downloadSampleTemplate: async () => {
+    const res = await api.get("/projects/sample-template", { responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "ProjectFlow_Sample_Template.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
+  exportXlsx: async (id: number, projectName: string = "Project") => {
+    const res = await api.get(`/projects/${id}/export`, { responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${projectName.replace(/[^a-zA-Z0-9_-]/g, "_")}_Export.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
+  importXlsx: (formData: FormData): Promise<{ project: { id: number; name: string }; stats: { sprintsCount: number; ticketsCount: number } }> =>
+    api.post("/projects/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data.data),
+
+  importIntoProject: (id: number, formData: FormData): Promise<{ project: { id: number; name: string }; stats: { sprintsCount: number; ticketsCount: number } }> =>
+    api.post(`/projects/${id}/import`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data.data),
 };
 
 export const authApi = {
