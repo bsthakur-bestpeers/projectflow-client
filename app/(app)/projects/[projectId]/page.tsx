@@ -25,20 +25,32 @@ export default function ProjectOverviewPage() {
       sprintsApi.listByProject(id),
       ticketsApi.listByProject(id, { limit: 200 }),
     ]).then(([s, sp, allTicketsRes]) => {
-      const summaryData = s.summary;
       const rawTickets = allTicketsRes?.tickets || [];
-      const calculatedBacklog = rawTickets.filter((t: Ticket) => !t.sprint_id && t.status !== "DONE").length;
-      const backlogCount = summaryData?.BACKLOG ?? summaryData?.backlog ?? calculatedBacklog;
+      const hasTickets = rawTickets.length > 0;
 
-      const totalCount = summaryData?.total !== undefined && (summaryData.BACKLOG !== undefined || summaryData.backlog !== undefined)
-        ? summaryData.total
-        : (summaryData?.total ?? 0) + calculatedBacklog;
+      // Calculate directly from current project tickets to guarantee 100% accuracy with Board & Sprints
+      const calculatedDone = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "DONE").length;
+      const calculatedInReview = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "IN_REVIEW").length;
+      const calculatedInProgress = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "IN_PROGRESS").length;
+      const calculatedTodo = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "TODO").length;
+      const calculatedBacklog = rawTickets.filter((t: Ticket) => !t.sprint_id && t.status !== "DONE").length;
+
+      const summaryData = s.summary;
+      const doneCount = hasTickets ? calculatedDone : (summaryData?.DONE ?? 0);
+      const inReviewCount = hasTickets ? calculatedInReview : (summaryData?.IN_REVIEW ?? 0);
+      const inProgressCount = hasTickets ? calculatedInProgress : (summaryData?.IN_PROGRESS ?? 0);
+      const todoCount = hasTickets ? calculatedTodo : (summaryData?.TODO ?? 0);
+      const backlogCount = hasTickets ? calculatedBacklog : (summaryData?.BACKLOG ?? summaryData?.backlog ?? 0);
+      const totalCount = doneCount + inReviewCount + inProgressCount + todoCount + backlogCount;
 
       setSummary({
-        ...summaryData,
+        total: totalCount,
         BACKLOG: backlogCount,
         backlog: backlogCount,
-        total: totalCount,
+        TODO: todoCount,
+        IN_PROGRESS: inProgressCount,
+        IN_REVIEW: inReviewCount,
+        DONE: doneCount,
       });
       setSprints(sp);
     }).catch(() => dispatch(addToast({ type: "error", message: "Failed to load overview." })))
