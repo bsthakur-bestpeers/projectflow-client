@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { Project, TicketSummary, User } from "@/types";
+import { Project, TicketSummary, User, Member } from "@/types";
 
 export const projectsApi = {
   list: (page = 1, limit = 20) =>
@@ -86,13 +86,16 @@ export const usersApi = {
 };
 
 export const membersApi = {
-  list: (projectId: number) =>
+  list: (projectId: number): Promise<Member[]> =>
     api.get(`/projects/${projectId}/members`).then((r) => r.data.data),
 
-  add: (projectId: number, email: string) =>
+  add: (projectId: number, email: string): Promise<Member> =>
     api.post(`/projects/${projectId}/members`, { email }).then((r) => r.data.data),
 
-  remove: (projectId: number, userId: number) =>
+  addMultiple: (projectId: number, emails: string[]): Promise<Member[]> =>
+    api.post(`/projects/${projectId}/members`, { emails }).then((r) => r.data.data),
+
+  remove: (projectId: number, userId: number): Promise<void> =>
     api.delete(`/projects/${projectId}/members/${userId}`).then(() => undefined),
 };
 
