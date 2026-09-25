@@ -29,7 +29,7 @@ export default function ProjectOverviewPage() {
       const hasTickets = rawTickets.length > 0;
 
       // Calculate directly from current project tickets to guarantee 100% accuracy with Board & Sprints
-      const calculatedDone = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "DONE").length;
+      const calculatedDone = rawTickets.filter((t: Ticket) => t.status === "DONE").length;
       const calculatedInReview = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "IN_REVIEW").length;
       const calculatedInProgress = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "IN_PROGRESS").length;
       const calculatedTodo = rawTickets.filter((t: Ticket) => t.sprint_id !== null && t.status === "TODO").length;

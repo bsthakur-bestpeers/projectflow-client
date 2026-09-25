@@ -44,6 +44,20 @@ export const projectsApi = {
     window.URL.revokeObjectURL(url);
   },
 
+  exportMultipleXlsx: async (projectIds?: number[], customFilename?: string) => {
+    const params = projectIds && projectIds.length > 0 ? `?projectIds=${projectIds.join(",")}` : "";
+    const res = await api.get(`/projects/export${params}`, { responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    const filename = customFilename || (projectIds && projectIds.length === 1 ? `Project_Export.xlsx` : `Projects_Export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
   importXlsx: (formData: FormData): Promise<{ project: { id: number; name: string }; stats: { sprintsCount: number; ticketsCount: number } }> =>
     api.post("/projects/import", formData, {
       headers: { "Content-Type": "multipart/form-data" },

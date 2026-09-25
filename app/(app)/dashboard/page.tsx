@@ -42,6 +42,9 @@ export default function DashboardPage() {
       ? assignedProjects
       : projects;
 
+  const projectMap = new Map<number, string>();
+  projects.forEach((p) => projectMap.set(p.id, p.name));
+
   const renderProjectCard = (p: Project, idx: number) => {
     const isOwned = p.created_by === user?.id;
     const gradient = projectColors[idx % projectColors.length];
@@ -320,14 +323,30 @@ export default function DashboardPage() {
               </p>
             ) : (
               <div className="space-y-2.5">
-                {activeSprints.map((s) => (
-                  <div key={s.id} className="bg-slate-50/80 border border-slate-200/80 rounded-xl px-3.5 py-2.5 shadow-2xs hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-slate-900 font-bold">{s.name ?? `Sprint #${s.id}`}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500">{formatDate(s.end_date)} end · {s._count?.tickets ?? 0} tickets</p>
-                  </div>
-                ))}
+                {activeSprints.map((s) => {
+                  const projName = projectMap.get(s.project_id);
+                  return (
+                    <Link
+                      key={s.id}
+                      href={`/projects/${s.project_id}/sprints`}
+                      className="block bg-slate-50/80 border border-slate-200/80 rounded-xl px-3.5 py-2.5 shadow-2xs hover:border-indigo-400 hover:bg-white transition-all group"
+                    >
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <span className="text-xs text-slate-900 font-bold group-hover:text-indigo-600 transition-colors truncate">
+                          {s.name ?? `Sprint #${s.id}`}
+                        </span>
+                        {projName && (
+                          <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md border border-indigo-200/60 shrink-0">
+                            {projName}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        {formatDate(s.end_date)} end · {s._count?.tickets ?? 0} tickets
+                      </p>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -344,18 +363,26 @@ export default function DashboardPage() {
               </p>
             ) : (
               <div className="space-y-2">
-                {assignedTickets.slice(0, 5).map((t) => (
-                  <Link
-                    key={t.id}
-                    href={`/tickets/${t.id}`}
-                    className="flex items-center gap-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 py-2 hover:border-indigo-400 hover:bg-white transition-all group shadow-2xs"
-                  >
-                    <TicketStatusBadge status={t.status} />
-                    <span className="text-xs text-slate-700 truncate group-hover:text-indigo-600 font-semibold flex-1">
-                      {t.title}
-                    </span>
-                  </Link>
-                ))}
+                {assignedTickets.slice(0, 5).map((t) => {
+                  const projName = projectMap.get(t.project_id);
+                  return (
+                    <Link
+                      key={t.id}
+                      href={`/tickets/${t.id}`}
+                      className="flex items-center gap-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 py-2 hover:border-indigo-400 hover:bg-white transition-all group shadow-2xs"
+                    >
+                      <TicketStatusBadge status={t.status} />
+                      <span className="text-xs text-slate-700 truncate group-hover:text-indigo-600 font-semibold flex-1">
+                        {t.title}
+                      </span>
+                      {projName && (
+                        <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/60 shrink-0">
+                          {projName}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -372,19 +399,29 @@ export default function DashboardPage() {
               </p>
             ) : (
               <div className="space-y-2">
-                {recentTickets.slice(0, 5).map((t) => (
-                  <Link
-                    key={t.id}
-                    href={`/tickets/${t.id}`}
-                    className="flex items-start gap-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 py-2 hover:border-indigo-400 hover:bg-white transition-all group shadow-2xs"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-slate-800 truncate group-hover:text-indigo-600 font-semibold">{t.title}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{timeAgo(t.updated_at)}</p>
-                    </div>
-                    {t.assignee && <Avatar name={t.assignee.full_name} size="sm" />}
-                  </Link>
-                ))}
+                {recentTickets.slice(0, 5).map((t) => {
+                  const projName = projectMap.get(t.project_id);
+                  return (
+                    <Link
+                      key={t.id}
+                      href={`/tickets/${t.id}`}
+                      className="flex items-start gap-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 py-2 hover:border-indigo-400 hover:bg-white transition-all group shadow-2xs"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                          <p className="text-xs text-slate-800 truncate group-hover:text-indigo-600 font-semibold">{t.title}</p>
+                          {projName && (
+                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200/60 shrink-0">
+                              {projName}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-400">{timeAgo(t.updated_at)}</p>
+                      </div>
+                      {t.assignee && <Avatar name={t.assignee.full_name} size="sm" />}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
