@@ -137,17 +137,38 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
   return files;
 };
 
-/** Remove legacy /uploads/ links, images, and data divs from HTML so they NEVER render inside the editor! */
-const stripUploadsFromHtml = (html: string): string => {
+/** Convert any <img> tags to clean text links (name or URL) and strip hidden data divs so previews NEVER render inside the editor! */
+const cleanEditorHtml = (html: string): string => {
   if (!html) return html;
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
-  doc.querySelectorAll('a[href*="/uploads/"]').forEach((el) => el.remove());
-  doc.querySelectorAll("img").forEach((el) => el.remove());
+  // Convert <img> tags to clean text links so inside the editor there is ONLY name or URL, NEVER an image preview!
+  doc.querySelectorAll("img").forEach((img) => {
+    const src = img.getAttribute("src") || "";
+    if (!src) {
+      img.remove();
+      return;
+    }
+    const resolvedUrl = resolveFileUrl(src);
+    const filename = resolvedUrl.split("/").pop() || "image.png";
+    const alt = img.getAttribute("alt");
+    const displayName = alt && alt !== filename ? alt : (filename.startsWith("screenshot-") ? "Screenshot.png" : filename);
+
+    const link = doc.createElement("a");
+    link.setAttribute("href", resolvedUrl);
+    link.setAttribute("target", "_blank");
+    link.setAttribute("rel", "noopener noreferrer");
+    link.className = "text-indigo-600 underline font-medium";
+    link.textContent = `📎 ${displayName}`;
+
+    img.replaceWith(link);
+  });
+
+  // Remove hidden data-attachments from editor content
   doc.querySelectorAll("[data-attachments]").forEach((el) => el.remove());
 
-  // Remove empty paragraphs left behind after removing images / attachments
+  // Remove empty paragraphs left behind
   doc.querySelectorAll("p").forEach((p) => {
     if (!p.textContent?.trim() && !p.querySelector("a")) {
       p.remove();
@@ -168,7 +189,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
   const defaultPlaceholder = "Type /ai to Ask Rovo or @ to mention and notify someone.";
   
   const initialAttachments = useRef<AttachedFile[]>(extractAttachmentsFromHtml(content));
-  const cleanContent = useRef<string>(stripUploadsFromHtml(content));
+  const cleanContent = useRef<string>(cleanEditorHtml(content));
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadCount, setUploadCount] = useState(0);
@@ -209,8 +230,15 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         id: `${f.filename}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       }));
 
-      // Attachments are strictly tracked in the Attachments list below the editor.
-      // They are NEVER inserted or previewed inside the editor content!
+      // Insert clean link with name/URL into editor — NEVER an image preview!
+      if (editor) {
+        uploadedFiles.forEach((f) => {
+          const fileUrl = resolveFileUrl(f.url);
+          const displayName = f.originalName || f.filename;
+          editor.chain().focus().insertContent(` <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">📎 ${displayName}</a> `).run();
+        });
+      }
+
       setAttachments((prev) => {
         const combined = [...prev, ...newAttachments];
         latestAttachments.current = combined;
@@ -229,7 +257,14 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({ openOnClick: false }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-indigo-600 underline font-medium hover:text-indigo-800 transition-colors",
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      }),
     ],
     content: cleanContent.current || "",
     editable: !readOnly,
@@ -246,6 +281,19 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
           "[&_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_p.is-editor-empty:first-child::before]:text-slate-400 [&_p.is-editor-empty:first-child::before]:float-left [&_p.is-editor-empty:first-child::before]:pointer-events-none"
         ),
         "data-placeholder": placeholder ?? defaultPlaceholder,
+      },
+      handleClick: (view, pos, event) => {
+        const target = event.target as HTMLElement;
+        const link = target.closest("a");
+        if (link) {
+          const href = link.getAttribute("href");
+          if (href && href.includes("/uploads/")) {
+            event.preventDefault();
+            setPreviewUrl(resolveFileUrl(href));
+            return true;
+          }
+        }
+        return false;
       },
       handlePaste: (view, event) => {
         if (readOnly) return false;
@@ -292,7 +340,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     const parsed = extractAttachmentsFromHtml(content);
     setAttachments(parsed);
     latestAttachments.current = parsed;
-    const clean = stripUploadsFromHtml(content);
+    const clean = cleanEditorHtml(content);
     latestEditorHtml.current = clean;
     if (editor && editor.getHTML() !== clean) {
       editor.commands.setContent(clean || "");
@@ -327,6 +375,13 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     if (imageInputRef.current) {
       imageInputRef.current.value = "";
     }
+  };
+
+  const insertLinkIntoEditor = (att: AttachedFile) => {
+    if (!editor) return;
+    const fileUrl = resolveFileUrl(att.url);
+    const displayName = att.originalName || att.filename;
+    editor.chain().focus().insertContent(` <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">📎 ${displayName}</a> `).run();
   };
 
   const handleRemoveAttachment = async (attachment: AttachedFile) => {
@@ -512,6 +567,18 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-1 shrink-0 ml-1">
+                    {/* Insert link button */}
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => insertLinkIntoEditor(att)}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors cursor-pointer"
+                        title="Insert link into description"
+                      >
+                        + Link
+                      </button>
+                    )}
+
                     {/* Remove button */}
                     {!readOnly && (
                       <button
