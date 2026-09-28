@@ -39,7 +39,6 @@ export default function TicketDetailPage() {
   const [priority, setPriority] = useState("MEDIUM");
   const [estimation, setEstimation] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
-  const [sprintId, setSprintId] = useState("");
 
   useEffect(() => {
     ticketsApi.getById(parseInt(ticketId)).then(async (t) => {
@@ -50,7 +49,6 @@ export default function TicketDetailPage() {
       setPriority(t.priority || "MEDIUM");
       setEstimation(t.estimation ?? "");
       setAssigneeId(t.assignee_id?.toString() ?? "");
-      setSprintId(t.sprint_id?.toString() ?? "");
 
       const [m, sp, p, u] = await Promise.all([
         membersApi.list(t.project_id).catch(() => []),
@@ -75,7 +73,6 @@ export default function TicketDetailPage() {
       const updated = await ticketsApi.update(ticket.id, {
         title, description, status, priority, estimation: estimation || null,
         assigneeId: assigneeId ? parseInt(assigneeId) : null,
-        sprintId: sprintId ? parseInt(sprintId) : null,
       });
       setTicket(updated);
       dispatch(addToast({ type: "success", message: "Ticket saved." }));
@@ -120,11 +117,28 @@ export default function TicketDetailPage() {
           <Input id="ticket-detail-title" value={title} onChange={(e) => setTitle(e.target.value)} className="text-xl sm:text-2xl font-extrabold !border-transparent hover:!border-slate-200 focus:!border-indigo-500 !px-2" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
           <Select id="td-status" label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={TICKET_STATUS.map((s) => ({ value: s, label: TICKET_STATUS_LABELS[s] }))} />
           <Select id="td-priority" label="Priority" value={priority} onChange={(e) => setPriority(e.target.value)} options={getPriorityOptions()} />
-          <Select id="td-assignee" label="Assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} placeholder="Unassigned" options={userList.map((m) => ({ value: m.id.toString(), label: m.full_name, icon: <Avatar name={m.full_name} size="xs" /> }))} />
-          <Select id="td-sprint" label="Sprint" value={sprintId} onChange={(e) => setSprintId(e.target.value)} placeholder="Backlog" options={sprints.map((s) => ({ value: s.id.toString(), label: s.name ?? `Sprint #${s.id}` }))} />
+          <Select
+            id="td-assignee"
+            label="Assignee"
+            value={assigneeId}
+            onChange={(e) => setAssigneeId(e.target.value)}
+            placeholder="Unassigned"
+            options={[
+              {
+                value: "",
+                label: "Unassigned",
+                icon: (
+                  <span className="w-5 h-5 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-[10px] font-bold">
+                    ✕
+                  </span>
+                ),
+              },
+              ...userList.map((m) => ({ value: m.id.toString(), label: m.full_name, icon: <Avatar name={m.full_name} size="xs" /> })),
+            ]}
+          />
           <Input id="td-estimation" label="Estimation" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="e.g. 1.5h, 2.5, 2d" />
         </div>
 

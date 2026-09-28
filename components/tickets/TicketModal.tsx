@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
-import { ticketsApi, membersApi, sprintsApi } from "@/services/api";
-import { Ticket, Member, Sprint } from "@/types";
+import { ticketsApi, membersApi } from "@/services/api";
+import { Ticket, Member } from "@/types";
 import { TICKET_STATUS, TICKET_STATUS_LABELS } from "@/constants";
 import { TicketStatusBadge, AssignmentFlowBadge, PriorityBadge, getPriorityOptions } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Misc";
@@ -29,7 +29,6 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
   const [members, setMembers] = useState<Member[]>([]);
-  const [sprints, setSprints] = useState<Sprint[]>([]);
   const [title, setTitle] = useState(ticket.title);
   const [description, setDescription] = useState(ticket.description ?? "");
   const [status, setStatus] = useState(ticket.status);
@@ -37,7 +36,6 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
   const [estimation, setEstimation] = useState(ticket.estimation ?? "");
   const [assigneeId, setAssigneeId] = useState(ticket.assignee_id?.toString() ?? "");
   const [authorId, setAuthorId] = useState(ticket.author_id?.toString() ?? "");
-  const [sprintId, setSprintId] = useState(ticket.sprint_id?.toString() ?? "");
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -55,9 +53,7 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
     setEstimation(ticket.estimation ?? "");
     setAssigneeId(ticket.assignee_id?.toString() ?? "");
     setAuthorId(ticket.author_id?.toString() ?? "");
-    setSprintId(ticket.sprint_id?.toString() ?? "");
     membersApi.list(ticket.project_id).then(setMembers).catch(() => { });
-    sprintsApi.listByProject(ticket.project_id).then(setSprints).catch(() => { });
   }, [isOpen, ticket]);
 
   const handleSave = async () => {
@@ -71,7 +67,6 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
         estimation: estimation || null,
         assigneeId: assigneeId ? parseInt(assigneeId) : null,
         authorId: authorId ? parseInt(authorId) : undefined,
-        sprintId: sprintId ? parseInt(sprintId) : null,
       });
       onUpdated(updated);
       dispatch(addToast({ type: "success", message: "Ticket updated." }));
@@ -121,13 +116,17 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
               <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Priority:</span>
               <PriorityBadge priority={priority} size="sm" />
             </div>
-            <span className="text-slate-300 hidden sm:inline">|</span>
-            <div className="flex items-center gap-1.5 shrink-0 min-w-0">
-              <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Sprint:</span>
-              <span className="font-semibold text-slate-800 truncate max-w-[120px] sm:max-w-none text-[11px] sm:text-xs">
-                {sprintId ? (sprints.find((s) => s.id.toString() === sprintId)?.name ?? `Sprint #${sprintId}`) : "Backlog"}
-              </span>
-            </div>
+            {ticket.sprint?.name && (
+              <>
+                <span className="text-slate-300 hidden sm:inline">|</span>
+                <div className="flex items-center gap-1.5 shrink-0 min-w-0">
+                  <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Sprint:</span>
+                  <span className="font-semibold text-slate-800 truncate max-w-[120px] sm:max-w-none text-[11px] sm:text-xs">
+                    {ticket.sprint.name}
+                  </span>
+                </div>
+              </>
+            )}
             <span className="text-slate-300 hidden sm:inline">|</span>
             <div className="flex items-center gap-1.5 min-w-0 shrink">
               <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Flow:</span>
@@ -156,73 +155,69 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             <TiptapEditor key={`ticket-${ticket.id}`} content={description} onChange={setDescription} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-slate-50/80 p-3 sm:p-3.5 rounded-xl border border-slate-200/70">
-            <Select
-              id="ticket-status"
-              label="Status *"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              options={TICKET_STATUS.map((s) => ({ value: s, label: TICKET_STATUS_LABELS[s] }))}
-            />
-            <Select
-              id="ticket-priority"
-              label="Priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              options={getPriorityOptions()}
-            />
-            <Select
-              id="ticket-assignee"
-              label="Assignee"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-              placeholder="Unassigned"
-              options={[
-                {
-                  value: "",
-                  label: "Unassigned",
-                  icon: (
-                    <span className="w-5 h-5 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-[10px] font-bold">
-                      ✕
-                    </span>
-                  ),
-                },
-                ...members.map((m) => ({
-                  value: m.id.toString(),
-                  label: m.full_name,
-                  icon: <Avatar name={m.full_name} size="xs" />,
-                })),
-              ]}
-            />
-            <Select
-              id="ticket-sprint"
-              label="Sprint"
-              value={sprintId}
-              onChange={(e) => setSprintId(e.target.value)}
-              placeholder="Backlog"
-              options={[
-                { value: "", label: "Backlog" },
-                ...sprints.map((s) => ({
-                  value: s.id.toString(),
-                  label: s.name ?? `Sprint #${s.id}`,
-                })),
-              ]}
-            />
-            <Input
-              id="ticket-author"
-              label="Author (Reporter)"
-              value={ticket.author.full_name}
-              disabled
-              className="bg-slate-100/50 text-slate-500 cursor-not-allowed"
-            />
-            <Input
-              id="ticket-estimation"
-              label="Estimation"
-              hint="e.g. 1.5h, 2.5, 2d"
-              value={estimation}
-              onChange={(e) => setEstimation(e.target.value)}
-              placeholder="e.g. 1.5h, 2.5, 2d"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 bg-slate-50/80 p-3 sm:p-3.5 rounded-xl border border-slate-200/70">
+            <div className="lg:col-span-2">
+              <Select
+                id="ticket-status"
+                label="Status *"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                options={TICKET_STATUS.map((s) => ({ value: s, label: TICKET_STATUS_LABELS[s] }))}
+              />
+            </div>
+            <div className="lg:col-span-2">
+              <Select
+                id="ticket-priority"
+                label="Priority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                options={getPriorityOptions()}
+              />
+            </div>
+            <div className="lg:col-span-2">
+              <Select
+                id="ticket-assignee"
+                label="Assignee"
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                placeholder="Unassigned"
+                options={[
+                  {
+                    value: "",
+                    label: "Unassigned",
+                    icon: (
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-[10px] font-bold">
+                        ✕
+                      </span>
+                    ),
+                  },
+                  ...members.map((m) => ({
+                    value: m.id.toString(),
+                    label: m.full_name,
+                    icon: <Avatar name={m.full_name} size="xs" />,
+                  })),
+                ]}
+              />
+            </div>
+            <div className="lg:col-span-3">
+              <Input
+                id="ticket-author"
+                label="Author (Reporter)"
+                value={ticket.author.full_name}
+                disabled
+                className="bg-slate-100/50 text-slate-500 cursor-not-allowed"
+              />
+            </div>
+            <div className="lg:col-span-3">
+              <Input
+                id="ticket-estimation"
+                label="Estimation"
+                hint="e.g. 1.5h, 2.5, 2d"
+                value={estimation}
+                onChange={(e) => setEstimation(e.target.value)}
+                placeholder="e.g. 1.5h, 2.5, 2d"
+              />
+            </div>
           </div>
 
           {/* Meta */}
