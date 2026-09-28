@@ -107,12 +107,26 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
-            {/* Export Button */}
+            {/* Import Excel Button */}
+            <button
+              onClick={() => setImportOpen(true)}
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl transition-all cursor-pointer shadow-2xs shrink-0"
+              title="Import sprints & tickets from Excel (.xlsx)"
+              id="project-detail-import-btn"
+            >
+              <svg className="w-3.5 h-3.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              <span>Import Excel</span>
+            </button>
+
+            {/* Export Excel Button */}
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 rounded-xl transition-all cursor-pointer shadow-2xs shrink-0 disabled:opacity-50"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-600 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl transition-all cursor-pointer shadow-2xs shrink-0 disabled:opacity-50"
               title="Export project to Excel (.xlsx)"
+              id="project-detail-export-btn"
             >
               {exporting ? (
                 <svg className="w-3.5 h-3.5 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
@@ -124,19 +138,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               )}
-              <span>{exporting ? "Exporting..." : "Export"}</span>
-            </button>
-
-            {/* Import Button */}
-            <button
-              onClick={() => setImportOpen(true)}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 rounded-xl transition-all cursor-pointer shadow-2xs shrink-0"
-              title="Import sprints & tickets from Excel (.xlsx)"
-            >
-              <svg className="w-3.5 h-3.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              <span>Import</span>
+              <span>{exporting ? "Exporting..." : "Export Excel"}</span>
             </button>
 
             {isOwner && (
