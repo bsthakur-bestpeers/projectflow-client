@@ -10,7 +10,6 @@ import Button from "@/components/ui/Button";
 import CreateProjectModal from "@/components/projects/CreateProjectModal";
 import EditProjectModal from "@/components/projects/EditProjectModal";
 import ImportProjectModal from "@/components/projects/ImportProjectModal";
-import ExportProjectModal from "@/components/projects/ExportProjectModal";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +29,6 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [exportDefaultId, setExportDefaultId] = useState<number | undefined>(undefined);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -214,21 +211,6 @@ export default function ProjectsPage() {
             Import Excel
           </Button>
 
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setExportDefaultId(undefined);
-              setExportOpen(true);
-            }}
-            className="border-slate-200/90 text-slate-700 bg-white hover:bg-slate-50 hover:text-emerald-600 shadow-2xs font-semibold text-xs py-2 px-3 sm:px-4"
-            id="projects-export-btn"
-          >
-            <svg className="w-3.5 h-3.5 text-emerald-600 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Export Excel
-          </Button>
-
           {user?.role === "ADMIN" ? (
             <Link href="/admin/users">
               <Button variant="secondary" className="border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100">
@@ -385,13 +367,6 @@ export default function ProjectsPage() {
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}
         onSuccess={loadProjects}
-      />
-
-      <ExportProjectModal
-        isOpen={exportOpen}
-        onClose={() => setExportOpen(false)}
-        projects={projects}
-        defaultProjectId={exportDefaultId}
       />
 
       <EditProjectModal
