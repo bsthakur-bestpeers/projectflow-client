@@ -137,32 +137,22 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
   return files;
 };
 
-/** Convert any <img> tags to clean text links (name or URL) and strip hidden data divs so previews NEVER render inside the editor! */
+/** Remove all <img> tags, attachment links, and hidden data divs so NOTHING from attachments appears inside the description editor! */
 const cleanEditorHtml = (html: string): string => {
   if (!html) return html;
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
-  // Convert <img> tags to clean text links so inside the editor there is ONLY name or URL, NEVER an image preview!
-  doc.querySelectorAll("img").forEach((img) => {
-    const src = img.getAttribute("src") || "";
-    if (!src) {
-      img.remove();
-      return;
+  // Remove all <img> tags
+  doc.querySelectorAll("img").forEach((el) => el.remove());
+
+  // Remove any attachment links (e.g. pointing to /uploads/ or starting with 📎)
+  doc.querySelectorAll("a").forEach((el) => {
+    const href = el.getAttribute("href") || "";
+    const text = el.textContent || "";
+    if (href.includes("/uploads/") || text.trim().startsWith("📎")) {
+      el.remove();
     }
-    const resolvedUrl = resolveFileUrl(src);
-    const filename = resolvedUrl.split("/").pop() || "image.png";
-    const alt = img.getAttribute("alt");
-    const displayName = alt && alt !== filename ? alt : (filename.startsWith("screenshot-") ? "Screenshot.png" : filename);
-
-    const link = doc.createElement("a");
-    link.setAttribute("href", resolvedUrl);
-    link.setAttribute("target", "_blank");
-    link.setAttribute("rel", "noopener noreferrer");
-    link.className = "text-indigo-600 underline font-medium";
-    link.textContent = `📎 ${displayName}`;
-
-    img.replaceWith(link);
   });
 
   // Remove hidden data-attachments from editor content
@@ -230,15 +220,8 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         id: `${f.filename}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       }));
 
-      // Insert clean link with name/URL into editor — NEVER an image preview!
-      if (editor) {
-        uploadedFiles.forEach((f) => {
-          const fileUrl = resolveFileUrl(f.url);
-          const displayName = f.originalName || f.filename;
-          editor.chain().focus().insertContent(` <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">📎 ${displayName}</a> `).run();
-        });
-      }
-
+      // No need to show URL or preview in description box!
+      // All attachments are kept strictly in the Attachments section below.
       setAttachments((prev) => {
         const combined = [...prev, ...newAttachments];
         latestAttachments.current = combined;
@@ -375,13 +358,6 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     if (imageInputRef.current) {
       imageInputRef.current.value = "";
     }
-  };
-
-  const insertLinkIntoEditor = (att: AttachedFile) => {
-    if (!editor) return;
-    const fileUrl = resolveFileUrl(att.url);
-    const displayName = att.originalName || att.filename;
-    editor.chain().focus().insertContent(` <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">📎 ${displayName}</a> `).run();
   };
 
   const handleRemoveAttachment = async (attachment: AttachedFile) => {
@@ -567,18 +543,6 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-1 shrink-0 ml-1">
-                    {/* Insert link button */}
-                    {!readOnly && (
-                      <button
-                        type="button"
-                        onClick={() => insertLinkIntoEditor(att)}
-                        className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors cursor-pointer"
-                        title="Insert link into description"
-                      >
-                        + Link
-                      </button>
-                    )}
-
                     {/* Remove button */}
                     {!readOnly && (
                       <button
