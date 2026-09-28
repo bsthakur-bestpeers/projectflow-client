@@ -2,7 +2,6 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
 import { useEffect, useRef, useState } from "react";
 import { cn, resolveFileUrl } from "@/lib/utils";
 import { uploadApi, UploadedFile } from "@/services/api";
@@ -83,7 +82,7 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
   const files: AttachedFile[] = [];
   const seen = new Set<string>();
 
-  // Try parsing from hidden data div first (new format)
+  // 1. Try parsing from hidden data div first (structured format)
   const dataDiv = doc.querySelector("[data-attachments]");
   if (dataDiv) {
     try {
@@ -103,7 +102,7 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
     } catch { /* ignore parse errors */ }
   }
 
-  // Fallback / legacy: find <a> tags pointing to /uploads/
+  // 2. Fallback / legacy: find <a> tags pointing to /uploads/
   doc.querySelectorAll('a[href*="/uploads/"]').forEach((el) => {
     const href = el.getAttribute("href") || "";
     const url = resolveFileUrl(href);
@@ -115,21 +114,42 @@ const extractAttachmentsFromHtml = (html: string): AttachedFile[] => {
     }
   });
 
+  // 3. Fallback / legacy: find <img> tags (screenshots or files previously in editor)
+  doc.querySelectorAll("img").forEach((el) => {
+    const src = el.getAttribute("src") || "";
+    if (!src) return;
+    const url = resolveFileUrl(src);
+    const filename = url.split("/").pop() || `screenshot-${Date.now()}.png`;
+    if (!seen.has(filename) && !filename.startsWith("data:")) {
+      seen.add(filename);
+      const alt = el.getAttribute("alt") || filename;
+      files.push({
+        id: `${filename}-loaded`,
+        url,
+        filename,
+        originalName: alt !== filename ? alt : (filename.length > 30 ? "Screenshot.png" : filename),
+        mimetype: inferMimetype(filename),
+        size: 0,
+      });
+    }
+  });
+
   return files;
 };
 
-/** Remove legacy /uploads/ links and data divs from HTML, but keep inline <img> tags in the editor! */
+/** Remove legacy /uploads/ links, images, and data divs from HTML so they NEVER render inside the editor! */
 const stripUploadsFromHtml = (html: string): string => {
   if (!html) return html;
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
   doc.querySelectorAll('a[href*="/uploads/"]').forEach((el) => el.remove());
+  doc.querySelectorAll("img").forEach((el) => el.remove());
   doc.querySelectorAll("[data-attachments]").forEach((el) => el.remove());
 
-  // Remove empty paragraphs left behind
+  // Remove empty paragraphs left behind after removing images / attachments
   doc.querySelectorAll("p").forEach((p) => {
-    if (!p.textContent?.trim() && !p.querySelector("img, a")) {
+    if (!p.textContent?.trim() && !p.querySelector("a")) {
       p.remove();
     }
   });
@@ -168,10 +188,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     onChange(fullHtml);
   };
 
-  const uploadFiles = async (
-    files: File[],
-    options?: { insertIntoEditor?: boolean }
-  ) => {
+  const uploadFiles = async (files: File[]) => {
     if (!files || files.length === 0) return;
     setIsUploading(true);
     setUploadCount(files.length);
@@ -192,18 +209,8 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         id: `${f.filename}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       }));
 
-      // If requested or if file is an image and uploaded via Image tool/paste, insert directly into the editor
-      if (options?.insertIntoEditor && editor) {
-        uploadedFiles.forEach((f) => {
-          if (f.mimetype.startsWith("image/")) {
-            editor.chain().focus().setImage({
-              src: resolveFileUrl(f.url),
-              alt: f.originalName || f.filename,
-            }).run();
-          }
-        });
-      }
-
+      // Attachments are strictly tracked in the Attachments list below the editor.
+      // They are NEVER inserted or previewed inside the editor content!
       setAttachments((prev) => {
         const combined = [...prev, ...newAttachments];
         latestAttachments.current = combined;
@@ -223,7 +230,6 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     extensions: [
       StarterKit,
       Link.configure({ openOnClick: false }),
-      Image,
     ],
     content: cleanContent.current || "",
     editable: !readOnly,
@@ -241,23 +247,11 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         ),
         "data-placeholder": placeholder ?? defaultPlaceholder,
       },
-      handleClick: (view, pos, event) => {
-        const target = event.target as HTMLElement;
-        if (target.tagName === "IMG") {
-          const src = target.getAttribute("src");
-          if (src) {
-            setPreviewUrl(src);
-            return true;
-          }
-        }
-        return false;
-      },
       handlePaste: (view, event) => {
         if (readOnly) return false;
         const items = event.clipboardData?.items;
         if (!items) return false;
         const pastedFiles: File[] = [];
-        let hasImage = false;
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           if (item.kind === "file") {
@@ -267,16 +261,13 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
               if (file.name === "image.png") {
                 fileToUpload = new File([file], `screenshot-${Date.now()}.png`, { type: file.type });
               }
-              if (fileToUpload.type.startsWith("image/")) {
-                hasImage = true;
-              }
               pastedFiles.push(fileToUpload);
             }
           }
         }
         if (pastedFiles.length > 0) {
           event.preventDefault();
-          uploadFiles(pastedFiles, { insertIntoEditor: hasImage });
+          uploadFiles(pastedFiles);
           return true;
         }
         return false;
@@ -286,9 +277,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
         const files = event.dataTransfer?.files;
         if (!files || files.length === 0) return false;
         event.preventDefault();
-        const fileArray = Array.from(files);
-        const hasImage = fileArray.some((f) => f.type.startsWith("image/"));
-        uploadFiles(fileArray, { insertIntoEditor: hasImage });
+        uploadFiles(Array.from(files));
         return true;
       },
     },
@@ -324,7 +313,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     const files = Array.from(fileList);
-    await uploadFiles(files, { insertIntoEditor: false });
+    await uploadFiles(files);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -334,21 +323,9 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     const files = Array.from(fileList);
-    await uploadFiles(files, { insertIntoEditor: true });
+    await uploadFiles(files);
     if (imageInputRef.current) {
       imageInputRef.current.value = "";
-    }
-  };
-
-  const insertAttachmentIntoEditor = (att: AttachedFile) => {
-    if (!editor) return;
-    if (att.mimetype.startsWith("image/")) {
-      editor.chain().focus().setImage({
-        src: resolveFileUrl(att.url),
-        alt: att.originalName || att.filename,
-      }).run();
-    } else {
-      editor.chain().focus().insertContent(` <a href="${resolveFileUrl(att.url)}" target="_blank" rel="noopener noreferrer">📎 ${att.originalName}</a> `).run();
     }
   };
 
@@ -445,7 +422,7 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
             <ToolbarButton onClick={handleFileClick} title="Attach Files (Docs, PDF, etc.)">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </ToolbarButton>
-            <ToolbarButton onClick={handleImageClick} title="Insert Image (Upload image inline)">
+            <ToolbarButton onClick={handleImageClick} title="Attach Screenshot / Image">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </ToolbarButton>
           </div>
@@ -535,18 +512,6 @@ export default function TiptapEditor({ content, onChange, readOnly, placeholder 
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-1 shrink-0 ml-1">
-                    {/* Insert into text button for images */}
-                    {isImage && !readOnly && (
-                      <button
-                        type="button"
-                        onClick={() => insertAttachmentIntoEditor(att)}
-                        className="p-1 rounded-md text-[10px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors cursor-pointer"
-                        title="Insert image into editor text"
-                      >
-                        + Insert
-                      </button>
-                    )}
-
                     {/* Remove button */}
                     {!readOnly && (
                       <button
