@@ -168,11 +168,22 @@ export default function CreateTicketModal({
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               placeholder="Unassigned"
-              options={members.map((m) => ({
-                value: m.id.toString(),
-                label: m.full_name,
-                icon: <Avatar name={m.full_name} size="xs" />,
-              }))}
+              options={[
+                {
+                  value: "",
+                  label: "Unassigned",
+                  icon: (
+                    <span className="w-5 h-5 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-[10px] font-bold">
+                      ✕
+                    </span>
+                  ),
+                },
+                ...members.map((m) => ({
+                  value: m.id.toString(),
+                  label: m.full_name,
+                  icon: <Avatar name={m.full_name} size="xs" />,
+                })),
+              ]}
             />
             <Input
               id="new-ticket-author"

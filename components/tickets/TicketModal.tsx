@@ -125,13 +125,17 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
             <div className="flex items-center gap-1.5 shrink-0 min-w-0">
               <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Sprint:</span>
               <span className="font-semibold text-slate-800 truncate max-w-[120px] sm:max-w-none text-[11px] sm:text-xs">
-                {sprints.find((s) => s.id.toString() === sprintId)?.name ?? (ticket.sprint?.name ?? `Sprint #${ticket.sprint_id ?? "-"}`)}
+                {sprintId ? (sprints.find((s) => s.id.toString() === sprintId)?.name ?? `Sprint #${sprintId}`) : "Backlog"}
               </span>
             </div>
             <span className="text-slate-300 hidden sm:inline">|</span>
             <div className="flex items-center gap-1.5 min-w-0 shrink">
               <span className="font-bold text-slate-500 text-[11px] sm:text-xs">Flow:</span>
-              <AssignmentFlowBadge author={ticket.author} assignee={ticket.assignee} size="sm" />
+              <AssignmentFlowBadge
+                author={ticket.author}
+                assignee={assigneeId ? (members.find((m) => m.id.toString() === assigneeId) ?? ticket.assignee) : null}
+                size="sm"
+              />
             </div>
           </div>
 
@@ -173,11 +177,22 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               placeholder="Unassigned"
-              options={members.map((m) => ({
-                value: m.id.toString(),
-                label: m.full_name,
-                icon: <Avatar name={m.full_name} size="xs" />,
-              }))}
+              options={[
+                {
+                  value: "",
+                  label: "Unassigned",
+                  icon: (
+                    <span className="w-5 h-5 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-[10px] font-bold">
+                      ✕
+                    </span>
+                  ),
+                },
+                ...members.map((m) => ({
+                  value: m.id.toString(),
+                  label: m.full_name,
+                  icon: <Avatar name={m.full_name} size="xs" />,
+                })),
+              ]}
             />
             <Select
               id="ticket-sprint"
@@ -185,10 +200,13 @@ export default function TicketModal({ ticket, isOpen, onClose, onUpdated, onDele
               value={sprintId}
               onChange={(e) => setSprintId(e.target.value)}
               placeholder="Backlog"
-              options={sprints.map((s) => ({
-                value: s.id.toString(),
-                label: s.name ?? `Sprint #${s.id}`,
-              }))}
+              options={[
+                { value: "", label: "Backlog" },
+                ...sprints.map((s) => ({
+                  value: s.id.toString(),
+                  label: s.name ?? `Sprint #${s.id}`,
+                })),
+              ]}
             />
             <Input
               id="ticket-author"
