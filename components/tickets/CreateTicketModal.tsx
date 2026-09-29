@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addToast } from "@/store/uiSlice";
 import { ticketsApi } from "@/services/api";
@@ -35,7 +34,6 @@ export default function CreateTicketModal({
   defaultSprintId,
   onRequestCreateSprint,
 }: Props) {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector((s) => s.auth.user);
   const [loading, setLoading] = useState(false);
@@ -88,7 +86,6 @@ export default function CreateTicketModal({
       onCreated(ticket);
       handleClose();
       dispatch(addToast({ type: "success", message: `Ticket "${ticket.title}" created!` }));
-      router.push(`/projects/${projectId}/board`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to create ticket.";
       dispatch(addToast({ type: "error", message }));
